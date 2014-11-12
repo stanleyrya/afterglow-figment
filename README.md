@@ -1,4 +1,4 @@
-afterglow-figment
+Afterglow
 =================
 
-Afterglow: Long-exposure real-time mirror for Figment Boston - First Night 2014
+Long-exposure real-time mirror for Figment Boston - First Night 2014
