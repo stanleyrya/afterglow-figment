@@ -71,7 +71,7 @@ public class GlowPanel extends JPanel {
 		JFrame frame = new JFrame("Afterglow");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		GlowPanel panel = new GlowPanel(new InvertFilter(new TraceFilter()));
+		GlowPanel panel = new GlowPanel(new InvertFilter(new MirrorFilter(new TraceFilter())));
 		frame.setSize(400, 400); // give the frame some arbitrary size
 		frame.setBackground(Color.BLUE);
 		frame.add(panel, BorderLayout.CENTER);

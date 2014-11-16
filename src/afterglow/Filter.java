@@ -17,6 +17,6 @@ public abstract class Filter {
 		//cool filter-stuff happening!
 		if(filter != null)
 			return filter.process(previous, current);
-		return null;
+		return current;
 	}
 }

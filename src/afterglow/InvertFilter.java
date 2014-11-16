@@ -10,8 +10,11 @@ public class InvertFilter extends Filter {
 		super(filter);
 	}
 
+	public InvertFilter() {
+	}
+
 	public Mat process(Mat oldFrame, Mat newFrame) {
-		Mat after = new Mat();//newFrame.size(), CvType.CV_64F);
+		Mat after = new Mat();
 		Mat invertcolormatrix= new Mat(newFrame.rows(),newFrame.cols(), newFrame.type(), new Scalar(255,255,255));
 		Core.subtract(invertcolormatrix, newFrame, after);
 		return super.process(oldFrame, after);
