@@ -15,12 +15,9 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.CvType;
 import org.opencv.core.MatOfByte;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.objdetect.CascadeClassifier;
 
 public class GlowPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -50,7 +47,14 @@ public class GlowPanel extends JPanel {
 		super.paintComponent(g);
 		if (this.image == null)
 			return;
-		g.drawImage(this.image, 10, 10, this.image.getWidth(), this.image.getHeight(), null);
+		int height = this.getParent().getHeight();
+		int width = this.getParent().getWidth();
+		if (height > width * this.image.getHeight() / this.image.getWidth())
+			height = width * this.image.getHeight() / this.image.getWidth();
+		else 
+			width = height * this.image.getWidth() / this.image.getHeight();
+		g.drawImage(this.image, (this.getParent().getWidth() - width) / 2, (this.getParent().getHeight() - height) / 2, width, height, null);
+		this.setBackground(Color.BLACK);
 	}
 	
 	public void update(Mat webcam_image) {
@@ -70,10 +74,19 @@ public class GlowPanel extends JPanel {
 		JFrame frame = new JFrame("Afterglow");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		GlowPanel panel = new GlowPanel(new MirrorFilter());
-		frame.setSize(400, 400); // give the frame some arbitrary size
-		frame.setBackground(Color.BLUE);
+		GlowPanel panel = new GlowPanel(new TraceFilter());
+		frame.setBackground(Color.BLACK);
 		frame.add(panel, BorderLayout.CENTER);
+		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+
+    	if (gd.isFullScreenSupported()) {
+    		frame.setUndecorated(true);
+    		gd.setFullScreenWindow(frame);
+    	}
+    	else {
+    		System.err.println("Full screen not supported");
+            frame.setSize(1280, 720); // just something to let you see the window
+    	}
 		frame.setVisible(true);
 
 		// Open and Read from the video stream
@@ -85,10 +98,7 @@ public class GlowPanel extends JPanel {
 			while (true) {
 				webCam.read(webcam_image);
 				if (!webcam_image.empty()) {
-					frame.setSize(webcam_image.width() + 40, webcam_image.height() + 60);
-					
 					panel.update(webcam_image);
-					Thread.sleep(10); // / This delay eases the computational load
 				} else {
 					System.out
 							.println(" --(!) No captured frame from webcam !");
