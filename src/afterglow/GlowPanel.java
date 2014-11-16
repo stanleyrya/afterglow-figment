@@ -15,6 +15,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.CvType;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Point;
@@ -59,14 +60,13 @@ public class GlowPanel extends JPanel {
 		super.paintComponent(g);
 		if (this.image == null)
 			return;
-		g.drawImage(this.image, 10, 10, this.image.getWidth(),
-				this.image.getHeight(), null);
+		g.drawImage(this.image, 10, 10, this.image.getWidth(), this.image.getHeight(), null);
 	}
 
-	public static Mat process(Mat frame) {
-		Mat frameBlur = new Mat();
-		Imgproc.blur(frame, frameBlur, new Size(5, 5));
-		return frameBlur;
+	public static Mat process(Mat before) {
+		Mat after = new Mat();
+		Core.flip(before, after, 1);
+		return after;
 		
 	}
 
@@ -75,7 +75,7 @@ public class GlowPanel extends JPanel {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
 		// make the JFrame
-		JFrame frame = new JFrame("WebCam Capture - Face detection");
+		JFrame frame = new JFrame("Afterglow");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		GlowPanel panel = new GlowPanel();
