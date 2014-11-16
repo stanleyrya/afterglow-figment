@@ -42,10 +42,10 @@ Images
 Visual Mockup
 ==========
 
-http://youtu.be/y89XvMZdjHg
+[![MMORPA ART](http://img.youtube.com/vi/y89XvMZdjHg/0.jpg)](http://www.youtube.com/watch?v=y89XvMZdjHg)  
 This project will be similar to “MMORPA ART: Massively Multiplayer Online Role-Playing Art”. In this video four artists build off of each other’s ideas and work together to create multiple masterpieces.
 
-http://youtu.be/12zJw9varYE
+[![OK GO - WTF](http://img.youtube.com/vi/12zJw9varYE/0.jpg)](http://www.youtube.com/watch?v=12zJw9varYE)  
 It will also be similar to the OK Go music video for their song WTF, which utilized time-delay visual effects.
 
 
