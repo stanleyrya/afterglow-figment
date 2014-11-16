@@ -6,21 +6,22 @@ package afterglow;
  * Search for the faces  
  * Display a circle around the faces using Java  
  */
-import java.awt.*;
-
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+
 import javax.imageio.ImageIO;
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.CvType;
 import org.opencv.core.MatOfByte;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.objdetect.CascadeClassifier;
 
 public class GlowPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -70,7 +71,7 @@ public class GlowPanel extends JPanel {
 		JFrame frame = new JFrame("Afterglow");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		GlowPanel panel = new GlowPanel(new MirrorFilter());
+		GlowPanel panel = new GlowPanel(new InvertFilter(new TraceFilter()));
 		frame.setSize(400, 400); // give the frame some arbitrary size
 		frame.setBackground(Color.BLUE);
 		frame.add(panel, BorderLayout.CENTER);
