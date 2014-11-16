@@ -38,10 +38,12 @@ When considering safety, reckless patrons that may cause trouble with the blocks
 
 Our leave no trace plan involves removing all electronic items and their stands to our vehicle (off-site) for transport. The wall will be dismantled and removed as well. Ideally breaking down our project will take minutes. 
 Images
-
-Visual Mockup
 ==========
 
+###Visual Mockup
+![modelangle](https://github.com/stanleyrya/afterglow-figment/raw/master/modelangle.jpg)
+
+###Similar Youtube Videos
 [![MMORPA ART](http://img.youtube.com/vi/y89XvMZdjHg/0.jpg)](http://www.youtube.com/watch?v=y89XvMZdjHg)  
 This project will be similar to “MMORPA ART: Massively Multiplayer Online Role-Playing Art”. In this video four artists build off of each other’s ideas and work together to create multiple masterpieces.
 
