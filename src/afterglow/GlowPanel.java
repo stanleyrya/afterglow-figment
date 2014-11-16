@@ -17,11 +17,6 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.CvType;
 import org.opencv.core.MatOfByte;
-import org.opencv.core.MatOfRect;
-import org.opencv.core.Point;
-import org.opencv.core.Size;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 import org.opencv.imgproc.Imgproc;
@@ -31,20 +26,15 @@ public class GlowPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private BufferedImage image;
 	private Mat current;
+	private Filter filter;
 
 	// Create a constructor method
-	public GlowPanel() {
+	public GlowPanel(Filter f) {
 		super();
+		filter = f;
 	}
 
-	/*
-	 * Converts/writes a Mat into a BufferedImage.
-	 * 
-	 * @param matrix Mat of type CV_8UC3 or CV_8UC1
-	 * 
-	 * @return BufferedImage of type TYPE_3BYTE_BGR or TYPE_BYTE_GRAY
-	 */
-	public boolean matToBufferedImage(Mat matrix) {
+	private boolean matToBufferedImage(Mat matrix) {
 		MatOfByte mb = new MatOfByte();
 		Highgui.imencode(".jpg", matrix, mb);
 		try {
@@ -56,18 +46,20 @@ public class GlowPanel extends JPanel {
 		return true; // Successful
 	}
 
-	public void paintComponent(Graphics g) {
+	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		if (this.image == null)
 			return;
 		g.drawImage(this.image, 10, 10, this.image.getWidth(), this.image.getHeight(), null);
 	}
-
-	public static Mat process(Mat before) {
-		Mat after = new Mat();
-		Core.flip(before, after, 1);
-		return after;
+	
+	public void update(Mat webcam_image) {
 		
+		if (current == null)
+			current = webcam_image;
+		current = filter.process(current, webcam_image);
+		this.matToBufferedImage(current);
+		this.repaint();
 	}
 
 	public static void main(String arg[]) throws InterruptedException {
@@ -78,7 +70,7 @@ public class GlowPanel extends JPanel {
 		JFrame frame = new JFrame("Afterglow");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		GlowPanel panel = new GlowPanel();
+		GlowPanel panel = new GlowPanel(new MirrorFilter());
 		frame.setSize(400, 400); // give the frame some arbitrary size
 		frame.setBackground(Color.BLUE);
 		frame.add(panel, BorderLayout.CENTER);
@@ -89,16 +81,13 @@ public class GlowPanel extends JPanel {
 		VideoCapture webCam = new VideoCapture(0);
 
 		if (webCam.isOpened()) {
-			Thread.sleep(100); // / This one-time delay allows the Webcam to
-								// initialize itself
+			Thread.sleep(100); // This one-time delay allows the Webcam to initialize itself
 			while (true) {
 				webCam.read(webcam_image);
 				if (!webcam_image.empty()) {
 					frame.setSize(webcam_image.width() + 40, webcam_image.height() + 60);
-					webcam_image = process(webcam_image);
-					// Display the image
-					panel.matToBufferedImage(webcam_image);
-					panel.repaint();
+					
+					panel.update(webcam_image);
 					Thread.sleep(10); // / This delay eases the computational load
 				} else {
 					System.out
