@@ -74,7 +74,7 @@ public class GlowPanel extends JPanel {
 		JFrame frame = new JFrame("Afterglow");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		GlowPanel panel = new GlowPanel(new TraceFilter());
+		GlowPanel panel = new GlowPanel(new MirrorFilter(new TraceFilter()));
 		frame.setBackground(Color.BLACK);
 		frame.add(panel, BorderLayout.CENTER);
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
