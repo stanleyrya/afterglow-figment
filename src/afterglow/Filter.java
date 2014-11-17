@@ -6,11 +6,18 @@ public abstract class Filter {
 	
 	private Filter filter;
 	
-	public Filter(){
-	}
+	public Filter(){}
 	
 	public Filter(Filter filter){
 		this.filter = filter;
+	}
+	
+	public void setFilter(Filter f) {
+		filter = f;
+	}
+	
+	public void removeFilter() {
+		filter = null;
 	}
 	
 	public Mat process(Mat previous, Mat current){
