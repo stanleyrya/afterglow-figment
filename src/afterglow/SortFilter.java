@@ -12,7 +12,6 @@ public class SortFilter extends Filter {
 		Mat after = new Mat(newFrame.size(), CvType.CV_64F);
 		//Core.sort(newFrame, after, Core.SORT_EVERY_COLUMN + Core.SORT_ASCENDING);
 		for(int i=0; i<newFrame.width(); i++){
-			//sort(new Mat(newFrame, new Range(0,newFrame.rows()), new Range(i,i)),after,i);
 			sort(newFrame,after,i);
 		}
 		return super.process(oldFrame, after);
