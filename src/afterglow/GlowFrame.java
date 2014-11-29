@@ -90,6 +90,6 @@ public class GlowFrame extends JFrame {
 
 		// make the JFrame
 		GlowFrame frame = new GlowFrame("Afterglow");
-		frame.start(new MirrorFilter(new FadeFilter(new TraceFilter(new ThresholdFilter()))));
+		frame.start(new MirrorFilter(new FadeFilter(new TraceFilter())));
 	}
 }

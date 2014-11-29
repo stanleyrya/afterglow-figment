@@ -5,6 +5,8 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 
 public class InvertFilter extends Filter {
+	
+	public InvertFilter() {}
 
 	public InvertFilter(Filter filter) {
 		super(filter);

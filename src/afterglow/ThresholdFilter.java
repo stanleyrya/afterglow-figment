@@ -20,14 +20,14 @@ public class ThresholdFilter extends Filter {
 		Imgproc.cvtColor(newFrame, mask, Imgproc.COLOR_RGB2GRAY);
 		Core.divide(mask, new Scalar(255, 255, 255), mask);
 		Mat newMask = new Mat();
-		Imgproc.threshold(mask, newMask, .7, 1, Imgproc.THRESH_BINARY);
+		Imgproc.threshold(mask, newMask, .9, 1, Imgproc.THRESH_BINARY);
 		Mat mergedNewMask = new Mat();
 		Core.merge(Arrays.asList(newMask, newMask, newMask), mergedNewMask);
 		Mat maskedNew = new Mat();
 		Core.multiply(newFrame, mergedNewMask, maskedNew);
 
 		Mat oldMask = new Mat();
-		Imgproc.threshold(mask, oldMask, .6, 1, Imgproc.THRESH_BINARY_INV);
+		Imgproc.threshold(mask, oldMask, .9, 1, Imgproc.THRESH_BINARY_INV);
 		Mat mergedOldMask = new Mat();
 		Core.merge(Arrays.asList(oldMask, oldMask, oldMask), mergedOldMask);
 		Mat maskedOld = new Mat();
