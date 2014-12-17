@@ -2,10 +2,12 @@ package afterglow;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FontFormatException;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
@@ -22,7 +24,7 @@ public class GlowFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private GlowPanel displayPanel;
 	
-	public GlowFrame(String title) {
+	public GlowFrame(String title) throws FontFormatException, IOException {
 		super(title);
 		
 		JMenuBar menubar = new JMenuBar();
@@ -36,7 +38,7 @@ public class GlowFrame extends JFrame {
 		fMenuItem.setToolTipText("Switch to full screen presentation mode");
 		final GlowFrame self = this;
 		fMenuItem.addActionListener(new ActionListener() {
-			@Override
+			//@Override
 			public void actionPerformed(ActionEvent event) {
 				dispose();
 				setUndecorated(true);
@@ -80,7 +82,7 @@ public class GlowFrame extends JFrame {
 	}
 
 
-	public static void main(String arg[]) throws InterruptedException {
+	public static void main(String arg[]) throws InterruptedException, FontFormatException, IOException {
 		// Load the native library.
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
@@ -90,7 +92,7 @@ public class GlowFrame extends JFrame {
 
 		// make the JFrame
 		GlowFrame frame = new GlowFrame("Afterglow");
-		//frame.start(new MirrorFilter(new FadeFilter(new HaloFilter(new TraceFilter()))));
-		frame.start(new MirrorFilter(new SortFilter()));
+//		frame.start(new MirrorFilter(new FadeFilter(new HaloFilter(new TraceFilter()))));
+		frame.start(new MirrorFilter(new BulkSortFilter()));
 	}
 }

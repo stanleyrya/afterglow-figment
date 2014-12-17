@@ -1,11 +1,19 @@
 package afterglow;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.util.Calendar;
+
 import javax.imageio.ImageIO;
-import javax.swing.*;
+import javax.swing.JPanel;
+
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.highgui.Highgui;
@@ -16,11 +24,15 @@ public class GlowPanel extends JPanel {
 	private BufferedImage image;
 	private Mat current;
 	private Filter filter;
+	private Font roboto;
 
-	public GlowPanel() {
+	public GlowPanel() throws FontFormatException, IOException {
 		super();
 		
 		filter = new MirrorFilter();
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		roboto = Font.createFont(Font.PLAIN, new File("assets/fonts/Roboto-Thin.ttf")).deriveFont(40f);
+		ge.registerFont(roboto);
 	}
 
 	private boolean matToBufferedImage(Mat matrix) {
@@ -49,6 +61,14 @@ public class GlowPanel extends JPanel {
 				(this.getParent().getHeight() - height) / 2, width, height,
 				null);
 		this.setBackground(Color.BLACK);
+		
+		paintUI(g);
+	}
+
+	private void paintUI(Graphics g) {
+		g.setColor(Color.white);
+		g.setFont(roboto);
+		g.drawString(Calendar.getInstance().get(Calendar.HOUR) + ":" + Calendar.getInstance().get(Calendar.MINUTE), 50, 50);
 	}
 
 	public void update(Mat webcam_image) {

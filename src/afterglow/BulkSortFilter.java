@@ -1,10 +1,7 @@
 package afterglow;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.opencv.core.Mat;
 
@@ -70,6 +67,11 @@ public class BulkSortFilter extends Filter {
 }
 
 class Color2 extends Color implements Comparable<Color2> {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	public Color2(int r, int g, int b) {
 		super(r, g, b);
