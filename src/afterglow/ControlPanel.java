@@ -9,6 +9,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -22,12 +23,14 @@ import java.util.Calendar;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 public class ControlPanel extends JPanel implements ActionListener, MouseListener, MouseMotionListener{
 	private static final long serialVersionUID = 1L;
 	private Font roboto;
 	private BufferedImage logo;
 	private GlowPanel canvas;
+	private Timer clock = new Timer(10000,this); //timer - every 10 seconds
 	
 	Rectangle2D time;
 	RectangleButton bulkSort;
@@ -43,7 +46,6 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	
 	RectangleButton selected;
 	RectangleButton[] appliedFilters;
-	
 
 	public ControlPanel() throws FontFormatException, IOException {
 		super();
@@ -73,6 +75,8 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		trace = new RectangleButton(1250, 250, 100, 100,"Trace", Color.blue);
 		
 		buttons = new RectangleButton[] {bulkSort, fade, halo, invert, mask, mirror, sort, threshold, trace};
+		
+		clock.start();
 	}
 
 	protected void paintComponent(Graphics g) {
@@ -88,7 +92,9 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		//time
 		g2.setColor(Color.orange);
 		g2.fill(time);
-		drawText(g, g2, fm, time, rectText, Calendar.getInstance().get(Calendar.HOUR) + ":" + Calendar.getInstance().get(Calendar.MINUTE));
+		String minute = "" + Calendar.getInstance().get(Calendar.MINUTE);
+		if(minute.length() == 1) minute = "0" + minute;
+		drawText(g, g2, fm, time, rectText, Calendar.getInstance().get(Calendar.HOUR) + ":" + minute);
 		
 		//draw each draggable rectangle button
 		for(RectangleButton button : buttons){
@@ -139,8 +145,9 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
-		
+		if (e.getSource() == clock){
+			repaint(new Rectangle((int)time.getX(),(int)time.getY(),(int)time.getWidth(),(int)time.getHeight()));
+		}
 	}
 
 	public void setCanvas(GlowPanel frame) {
