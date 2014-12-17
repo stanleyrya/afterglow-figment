@@ -42,6 +42,8 @@ Images
 
 ###Visual Mockup
 ![modelangle](https://github.com/stanleyrya/afterglow-figment/raw/master/modelangle.jpg)
+![modelangle2](https://github.com/stanleyrya/afterglow-figment/raw/master/modelangle2.jpg)
+![modelangle3](https://github.com/stanleyrya/afterglow-figment/raw/master/modelangle3.jpg)
 
 ###Similar Youtube Videos
 [![MMORPA ART](http://img.youtube.com/vi/y89XvMZdjHg/0.jpg)](http://www.youtube.com/watch?v=y89XvMZdjHg)  
