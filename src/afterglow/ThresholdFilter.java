@@ -1,6 +1,7 @@
 package afterglow;
 
 import java.util.Arrays;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
@@ -38,5 +39,5 @@ public class ThresholdFilter extends Filter {
 		
 		return super.process(oldFrame,result);
 	}
-
+	
 }

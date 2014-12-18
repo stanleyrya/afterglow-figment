@@ -12,6 +12,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -25,13 +27,15 @@ import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-public class ControlPanel extends JPanel implements ActionListener, MouseListener, MouseMotionListener{
+public class ControlPanel extends JPanel implements ActionListener, MouseListener, MouseMotionListener, ComponentListener{
 	private static final long serialVersionUID = 1L;
 	private Font roboto;
 	private BufferedImage logo;
+	private BufferedImage background;
 	private GlowPanel canvas;
 	private Timer clock = new Timer(10000,this); //timer - every 10 seconds
 	
+	//boxes
 	Rectangle2D time;
 	RectangleButton bulkSort;
 	RectangleButton fade;
@@ -39,13 +43,16 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	RectangleButton invert;
 	RectangleButton mask;
 	RectangleButton mirror;
-	RectangleButton sort;
 	RectangleButton threshold;
 	RectangleButton trace;
 	RectangleButton[] buttons;
 	
+	//dynamic
 	RectangleButton selected;
 	RectangleButton[] appliedFilters;
+	
+	//screen areas
+	Rectangle2D dropBox;
 
 	public ControlPanel() throws FontFormatException, IOException {
 		super();
@@ -53,15 +60,20 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
     	setBackground(Color.black); //initial background color
     	addMouseListener(this); //add the listener for mouse movement
     	addMouseMotionListener(this);
-		init();
-	}
-	
-	private void init() throws FontFormatException, IOException{
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+    	addComponentListener(this);
+    	
+    	GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		roboto = Font.createFont(Font.PLAIN, new File("assets/fonts/Roboto-Thin.ttf")).deriveFont(40f);
 		ge.registerFont(roboto);
 		logo = ImageIO.read(new File("logo.png"));
+		background = ImageIO.read(new File("assets/transparent.png"));
+		clock.start();
 		
+		init();
+	}
+	
+	//used to dynamically choose positions, sizes, etc...
+	private void init() throws FontFormatException, IOException{	
 		time = new Rectangle2D.Double(50, 50, 100, 100);
 		
 		bulkSort = new RectangleButton(50, 250, 100, 100,"Sort",Color.blue);
@@ -70,13 +82,15 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		invert = new RectangleButton(500, 250, 100, 100,"Invert", Color.magenta);
 		mask = new RectangleButton(650, 250, 100, 100,"Mask", Color.red);
 		mirror = new RectangleButton(800, 250, 100, 100,"Mirror", Color.pink);
-		sort = new RectangleButton(950, 250, 100, 100,"Sort", Color.YELLOW);
-		threshold = new RectangleButton(1100, 250, 100, 100,"Threshold", Color.orange);
-		trace = new RectangleButton(1250, 250, 100, 100,"Trace", Color.blue);
+		threshold = new RectangleButton(950, 250, 100, 100,"Threshold", Color.orange);
+		trace = new RectangleButton(1100, 250, 100, 100,"Trace", Color.blue);
+		buttons = new RectangleButton[] {bulkSort, fade, halo, invert, mask, mirror, threshold, trace};
 		
-		buttons = new RectangleButton[] {bulkSort, fade, halo, invert, mask, mirror, sort, threshold, trace};
-		
-		clock.start();
+		dropBox = new Rectangle2D.Double(this.getWidth()*3/4, 0, this.getWidth()*1/4, this.getHeight());
+	}
+	
+	public void setCanvas(GlowPanel frame) {
+		canvas = frame;
 	}
 
 	protected void paintComponent(Graphics g) {
@@ -85,6 +99,10 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		Graphics2D g2 = (Graphics2D) g;
 		FontMetrics fm = g2.getFontMetrics();
 		Rectangle2D rectText = null;
+		
+		//screen areas
+		g2.setColor(Color.orange);
+		g2.fill(dropBox);
 		
 		//logo
 		g.drawImage(logo, 150, 0, null);
@@ -109,6 +127,9 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			g2.fill(selected);
 			drawText(g, g2, fm, selected, rectText, selected.getText());
 		}
+		
+		//"background"
+		g2.drawImage(background, 0, 400, null);
 	}
 
 	//draws text in the center of a rectangle, could use refactoring with method parameters
@@ -119,39 +140,12 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
         int y = ((int) rect.getHeight() - (int) rectText.getHeight()) / 2 + fm.getAscent() + (int) rect.getY();
         g.drawString(text, x, y);
 	}
-
-	public void mouseClicked(MouseEvent e) {
-		if(bulkSort.contains(e.getX(),e.getY())){
-			canvas.setFilter(new BulkSortFilter());
-		}
-	}
-
-	public void mousePressed(MouseEvent e) {
-	}
-
-	public void mouseReleased(MouseEvent e) {
-		if(selected != null) selected = null;
-		repaint();
-	}
-
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
+	
+	//clock update
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == clock){
 			repaint(new Rectangle((int)time.getX(),(int)time.getY(),(int)time.getWidth(),(int)time.getHeight()));
 		}
-	}
-
-	public void setCanvas(GlowPanel frame) {
-		canvas = frame;
 	}
 
 	public void mouseDragged(MouseEvent e) {
@@ -159,7 +153,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		double x = point.getX();
 		double y = point.getY();
 		
-		if(selected != null && selected.contains(point)){
+		if(selected != null){
 			selected.setRect(x-selected.getWidth()/2, y-selected.getHeight()/2, selected.getWidth(), selected.getHeight());
 		}
 		else{
@@ -171,12 +165,34 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		}
 		repaint();
 	}
-
-	public void mouseMoved(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
+	
+	public void mouseReleased(MouseEvent e) {
+		//drag & dropped
+		if(selected != null){
+			if(dropBox.contains(e.getPoint())){
+				canvas.setFilter(selected.getFilter());
+			}
+			selected = null;
+		}
+		repaint();
 	}
 
+	//dynamically change view
+	public void componentResized(ComponentEvent e) {
+		try { init(); }
+		catch (FontFormatException e1)	{ e1.printStackTrace(); }
+		catch (IOException e1)			{ e1.printStackTrace(); }
+		repaint();
+	}
+	
+	public void mouseClicked(MouseEvent e) {}
+	public void mouseMoved(MouseEvent e) {}
+	public void mousePressed(MouseEvent e) {}
+	public void mouseEntered(MouseEvent e) {}
+	public void mouseExited(MouseEvent e) {}
+	public void componentMoved(ComponentEvent e) {}
+	public void componentShown(ComponentEvent e) {}
+	public void componentHidden(ComponentEvent e) {}
 }
 
 class RectangleButton extends Rectangle2D.Double{
@@ -199,4 +215,5 @@ class RectangleButton extends Rectangle2D.Double{
 	
 	public String getText(){ return text; }
 	public Color getColor(){ return color; }
+	public Filter getFilter(){ return Filter.makeFilter(text); }
 }

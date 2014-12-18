@@ -26,4 +26,18 @@ public abstract class Filter {
 			return filter.process(previous, current);
 		return current;
 	}
+	
+	public static Filter makeFilter(String filter){
+		switch(filter){
+			case "Sort":		return new BulkSortFilter();
+			case "Fade":		return new FadeFilter();
+			case "Halo":		return new HaloFilter();
+			case "Invert":		return new InvertFilter();
+			case "Mask":		return new MaskFilter();
+			case "Mirror":		return new MirrorFilter();
+			case "Threshold":	return new ThresholdFilter();
+			case "Trace":		return new TraceFilter();
+			default: 			return new MirrorFilter();
+		}
+	}
 }
