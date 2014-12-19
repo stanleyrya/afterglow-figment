@@ -55,6 +55,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	
 	//screen areas
 	Rectangle2D dropBox;
+	Rectangle2D buttonBox;
 
 	public ControlPanel() throws FontFormatException, IOException {
 		super();
@@ -82,17 +83,37 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	private void initBoxes(){	
 		time = new Rectangle2D.Double(50, 50, 100, 100);
 		
-		bulkSort = new RectangleButton(50, 250, 100, 100,"Sort",Color.blue);
-		fade = new RectangleButton(200, 250, 100, 100,"Fade", Color.cyan);
-		halo = new RectangleButton(350, 250, 100, 100,"Halo", Color.green);
-		invert = new RectangleButton(500, 250, 100, 100,"Invert", Color.magenta);
-		mask = new RectangleButton(650, 250, 100, 100,"Mask", Color.red);
-		mirror = new RectangleButton(800, 250, 100, 100,"Mirror", Color.pink);
-		threshold = new RectangleButton(950, 250, 100, 100,"Threshold", Color.orange);
-		trace = new RectangleButton(1100, 250, 100, 100,"Trace", Color.blue);
-		buttons = new RectangleButton[] {bulkSort, fade, halo, invert, mask, mirror, threshold, trace};
-		
 		dropBox = new Rectangle2D.Double(this.getWidth()*3/4, 0, this.getWidth()*1/4, this.getHeight());
+		buttonBox = new Rectangle2D.Double(0, 225, this.getWidth()*3/4, this.getHeight());
+		
+		bulkSort = new RectangleButton(createButtonRectangle(0),"Sort",Color.blue);
+		fade = new RectangleButton(createButtonRectangle(1),"Fade", Color.cyan);
+		halo = new RectangleButton(createButtonRectangle(2),"Halo", Color.green);
+		invert = new RectangleButton(createButtonRectangle(3),"Invert", Color.magenta);
+		mask = new RectangleButton(createButtonRectangle(4),"Mask", Color.red);
+		mirror = new RectangleButton(createButtonRectangle(5),"Mirror", Color.pink);
+		threshold = new RectangleButton(createButtonRectangle(6),"Threshold", Color.orange);
+		trace = new RectangleButton(createButtonRectangle(7),"Trace", Color.blue);
+		buttons = new RectangleButton[] {bulkSort, fade, halo, invert, mask, mirror, threshold, trace};
+	}
+	
+	//first index is 0
+	private Rectangle2D createButtonRectangle(int index){
+		double x = buttonBox.getX();
+		double y = buttonBox.getY();
+		double width = buttonBox.getWidth();
+		double height = buttonBox.getHeight();
+		
+		//which row
+		int yIndex = (int) ((20 + (20 + 100)*index + 100) / width);
+		System.out.print("y index: " + yIndex);
+		
+		//which coloumn
+		int xIndex = ((int) ((20 + (20 + 100)*index + 100) % width))/120;
+		if(yIndex == 0) xIndex--;
+		System.out.println("    x index: " + xIndex);
+		
+		return new Rectangle2D.Double(x + 20 + (20 + 100)*xIndex, y + 20 + (20 + 100)*(yIndex), 100, 100);
 	}
 	
 	public void setCanvas(GlowPanel frame) {
@@ -105,13 +126,13 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		Graphics2D g2 = (Graphics2D) g;
 		FontMetrics fm = g2.getFontMetrics();
 		Rectangle2D rectText = null;
-		
-		//screen areas
-		g2.setColor(Color.orange);
-		g2.fill(dropBox);
-		
+
 		//logo
 		g.drawImage(logo, 150, 0, null);
+		
+		//screen areas
+		g2.setColor(Color.gray);
+		g2.fill(dropBox);
 		
 		//time
 		g2.setColor(Color.orange);
@@ -164,6 +185,8 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		if(index < appliedFilters.size()){
 			redrawAppliedRectangles(index++); //slide the buttons after the added one
 		}
+		
+		//RE-ASSESS filter list + apply!
 	}
 	
 	private void removeFromApplied(int index){
@@ -173,6 +196,8 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		if(index < appliedFilters.size()){
 			redrawAppliedRectangles(index); //slide the buttons after removed one
 		}
+		
+		//RE-ASSESS filter list + apply!
 	}
 	
 	//redraw rectangles starting at index
@@ -237,7 +262,6 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		if(selected != null){
 			if(dropBox.contains(e.getPoint())){
 				addToApplied(getAppliedIndex(e.getPoint()), selected);
-				canvas.setFilter(selected.getFilter());
 			}
 			selected = null;
 		}
@@ -269,6 +293,12 @@ class RectangleButton extends Rectangle2D.Double{
 	
 	public RectangleButton(double x, double y, double width, double height, String text, Color color){
 		super(x,y,width,height);
+		this.text = text;
+		this.color = color;
+	}
+	
+	public RectangleButton(Rectangle2D rect, String text, Color color){
+		super(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
 		this.text = text;
 		this.color = color;
 	}
