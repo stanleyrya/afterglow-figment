@@ -7,12 +7,6 @@ import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
 public class MaskFilter extends Filter {
-	
-	public MaskFilter() {}
-
-	public MaskFilter(Filter filter) {
-		super(filter);
-	}
 
 	public Mat process(Mat oldFrame, Mat newFrame) {
 
@@ -23,7 +17,7 @@ public class MaskFilter extends Filter {
 		Mat merged = new Mat();
 		Core.merge(channels, merged);
 		
-		return super.process(oldFrame, merged);
+		return merged;
 	}
 
 }

@@ -64,7 +64,7 @@ public class ControlFrame extends JFrame {
         }
     }
 
-	public void setCanvas(GlowPanel frame) {
-		displayPanel.setCanvas(frame);
+	public void setCanvas(GlowPanel panel) {
+		displayPanel.setCanvas(panel);
 	}
 }

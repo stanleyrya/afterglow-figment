@@ -8,12 +8,6 @@ import org.opencv.imgproc.Imgproc;
 
 public class HaloFilter extends Filter{
 	
-	public HaloFilter() {}
-
-	public HaloFilter(Filter filter) {
-		super(filter);
-	}
-
 	public Mat process(Mat oldFrame, Mat newFrame) {
 
 		ArrayList<Mat> channels = new ArrayList<Mat>();
@@ -25,7 +19,7 @@ public class HaloFilter extends Filter{
 		Mat merged = new Mat();
 		Core.merge(channels, merged);
 		
-		return super.process(oldFrame, merged);
+		return merged;
 	}
 
 }

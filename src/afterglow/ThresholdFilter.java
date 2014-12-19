@@ -8,12 +8,6 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 public class ThresholdFilter extends Filter {
-	
-	public ThresholdFilter() {}
-
-	public ThresholdFilter(Filter filter) {
-		super(filter);
-	}
 
 	public Mat process(Mat oldFrame, Mat newFrame) {
 
@@ -37,7 +31,6 @@ public class ThresholdFilter extends Filter {
 		Mat result = new Mat();
 		Core.add(maskedOld, maskedNew, result);
 		
-		return super.process(oldFrame,result);
+		return result;
 	}
-	
 }

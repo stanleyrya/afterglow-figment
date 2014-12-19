@@ -5,14 +5,6 @@ import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
 public class SortFilter extends Filter {
-	
-	public SortFilter(Filter filter) {
-		super(filter);
-	}
-
-	public SortFilter() {
-		// TODO Auto-generated constructor stub
-	}
 
 	public Mat process(Mat oldFrame, Mat newFrame) {
 		Mat greyscale = new Mat();
@@ -31,7 +23,7 @@ public class SortFilter extends Filter {
 				after.put(j, i, newFrame.get(index[0], i));
 			}
 
-		return super.process(oldFrame, after);
+		return after;
 	}
 	
 }

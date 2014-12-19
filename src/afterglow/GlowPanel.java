@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
@@ -18,12 +19,13 @@ public class GlowPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private BufferedImage image;
 	private Mat current;
-	private Filter filter;
+	private ArrayList<Filter> filters;
 
 	public GlowPanel() throws IOException {
 		super();
 		
-		filter = new MirrorFilter();
+		filters = new ArrayList<Filter>();
+		filters.add(new MirrorFilter());
 	}
 
 	private boolean matToBufferedImage(Mat matrix) {
@@ -44,27 +46,35 @@ public class GlowPanel extends JPanel {
 			return;
 		int height = this.getParent().getHeight();
 		int width = this.getParent().getWidth();
+		
 		if (height > width * this.image.getHeight() / this.image.getWidth())
 			height = width * this.image.getHeight() / this.image.getWidth();
 		else
 			width = height * this.image.getWidth() / this.image.getHeight();
+		
 		g.drawImage(this.image, (this.getParent().getWidth() - width) / 2,
 				(this.getParent().getHeight() - height) / 2, width, height,
 				null);
+		
 		this.setBackground(Color.BLACK);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void update(Mat webcam_image) {
+		Mat old = current;
 		if (current == null)
-			current = webcam_image;
-		current = filter.process(current, webcam_image);
+			old = webcam_image;
+		current = webcam_image;
+		
+		for (Filter filter : (ArrayList<Filter>) filters.clone())
+			current = filter.process(old, current);
 		this.matToBufferedImage(current);
 		this.repaint();
 	}
 	
 	public void run() {
 		
-		// Open and Read from the video stream
+		// open and read from the video stream
 		Mat webcam_image = new Mat();
 		VideoCapture webCam = new VideoCapture(0);
 
@@ -82,13 +92,17 @@ public class GlowPanel extends JPanel {
 		webCam.release(); // release the webcam
 	}
 	
-	public void setFilter(Filter f) {
-		filter = f;
+	public void setFilters(ArrayList<Filter> fs) {
+		filters = fs;
+		filters.add(0, new MirrorFilter());
 	}
 	
-	public void addFilter(Filter f) {
-		f.setFilter(filter);
-		filter = f;
+	public void addFilter(int index, Filter filter) {
+		filters.add(index + 1, filter);
+	}
+	
+	public void removeFilter(int index) {
+		filters.remove(index + 1);
 	}
 
 }

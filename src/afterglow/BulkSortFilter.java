@@ -7,23 +7,14 @@ import org.opencv.core.Mat;
 
 public class BulkSortFilter extends Filter {
 	
-	public BulkSortFilter(Filter filter) {
-		super(filter);
-	}
-
-	public BulkSortFilter() {
-		// TODO Auto-generated constructor stub
-	}
-
 	public Mat process(Mat oldFrame, Mat newFrame) {		
 		for (int i = 0; i < newFrame.width(); i++) {
 			arraySort(newFrame, i);
 		}
-		return super.process(oldFrame, newFrame);
+		return newFrame;
 	}
 
 	// i is amount of column, j is amount of row
-
 	private void arraySort(Mat newFrame, int i) {
 		//retrieve data
 		Color2[] colors = new Color2[newFrame.height()];

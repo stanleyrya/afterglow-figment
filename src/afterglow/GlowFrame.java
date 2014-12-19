@@ -24,18 +24,18 @@ public class GlowFrame extends JFrame {
 		
 		JMenuBar menubar = new JMenuBar();
 
-		getRootPane().getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "close");
-		getRootPane().getActionMap().put("close", new AbstractAction() {
-			private static final long serialVersionUID = 1L;
-
-			public void actionPerformed(ActionEvent e) {
-				System.out.println("escaped");
-				dispose();
-				setUndecorated(false);
-				GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow(null);
-				setVisible(true);
-			}
-		});
+//		getRootPane().getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "close");
+//		getRootPane().getActionMap().put("close", new AbstractAction() {
+//			private static final long serialVersionUID = 1L;
+//
+//			public void actionPerformed(ActionEvent e) {
+//				System.out.println("escaped");
+//				dispose();
+//				setUndecorated(false);
+//				GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().setFullScreenWindow(null);
+//				setVisible(true);
+//			}
+//		});
 
 		setJMenuBar(menubar);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -65,7 +65,6 @@ public class GlowFrame extends JFrame {
 
 	public void start(ControlFrame controller) {
 //		displayPanel.setFilter(new MirrorFilter(new FadeFilter(new HaloFilter(new TraceFilter()))));
-		displayPanel.setFilter(new MirrorFilter(new BulkSortFilter(new HaloFilter())));
 		controller.setCanvas(displayPanel);
 		displayPanel.run();
 	}
