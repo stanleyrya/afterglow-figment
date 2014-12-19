@@ -218,8 +218,7 @@ public class ControlPanel extends JPanel implements ActionListener,
 
 	// redraw rectangles starting at index
 	private void redrawAppliedRectangles(int index) {
-		for (RectangleButton button : appliedFilters.subList(index,
-				appliedFilters.size())) {
+		for (RectangleButton button : appliedFilters.subList(index, appliedFilters.size())) {
 			button.setRect(createAppliedRectangle(index));
 			index++;
 		}
@@ -234,8 +233,7 @@ public class ControlPanel extends JPanel implements ActionListener,
 	}
 
 	private int getAppliedIndex(Point point) {
-		int index = (int) (point.getY()) / (20 + 50); // leaves out extra
-														// decimals! :)
+		int index = (int) (point.getY()) / (20 + 50); // leaves out extra decimals! :)
 		if (index >= appliedFilters.size()) {
 			return appliedFilters.size();
 		} else
@@ -274,6 +272,7 @@ public class ControlPanel extends JPanel implements ActionListener,
 				if (button.contains(point)) {
 					selected = new RectangleButton(button);
 					removeFromApplied(getAppliedIndex(point));
+					break;
 				}
 			}
 		}

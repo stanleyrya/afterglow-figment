@@ -23,7 +23,7 @@ public class GlowPanel extends JPanel {
 
 	public GlowPanel() throws IOException {
 		super();
-		
+
 		filters = new ArrayList<Filter>();
 		filters.add(new MirrorFilter());
 	}
@@ -46,16 +46,16 @@ public class GlowPanel extends JPanel {
 			return;
 		int height = this.getParent().getHeight();
 		int width = this.getParent().getWidth();
-		
+
 		if (height > width * this.image.getHeight() / this.image.getWidth())
 			height = width * this.image.getHeight() / this.image.getWidth();
 		else
 			width = height * this.image.getWidth() / this.image.getHeight();
-		
+
 		g.drawImage(this.image, (this.getParent().getWidth() - width) / 2,
 				(this.getParent().getHeight() - height) / 2, width, height,
 				null);
-		
+
 		this.setBackground(Color.BLACK);
 	}
 
@@ -65,15 +65,15 @@ public class GlowPanel extends JPanel {
 		if (current == null)
 			old = webcam_image;
 		current = webcam_image;
-		
+
 		for (Filter filter : (ArrayList<Filter>) filters.clone())
 			current = filter.process(old, current);
 		this.matToBufferedImage(current);
 		this.repaint();
 	}
-	
+
 	public void run() {
-		
+
 		// open and read from the video stream
 		Mat webcam_image = new Mat();
 		VideoCapture webCam = new VideoCapture(0);
@@ -84,23 +84,24 @@ public class GlowPanel extends JPanel {
 				if (!webcam_image.empty()) {
 					update(webcam_image);
 				} else {
-					System.out.println(" --(!) No captured frame from webcam !");
+					System.out
+							.println(" --(!) No captured frame from webcam !");
 					break;
 				}
 			}
 		}
 		webCam.release(); // release the webcam
 	}
-	
+
 	public void setFilters(ArrayList<Filter> fs) {
 		filters = fs;
 		filters.add(0, new MirrorFilter());
 	}
-	
+
 	public void addFilter(int index, Filter filter) {
 		filters.add(index + 1, filter);
 	}
-	
+
 	public void removeFilter(int index) {
 		filters.remove(index + 1);
 	}
