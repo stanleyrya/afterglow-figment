@@ -153,6 +153,8 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
         g.drawString(text, x, y);
 	}
 	
+	// APPLIED FILTER LIST LOGIC ---------------------------------------------------------
+	
 	private void addToApplied(int index, RectangleButton selected){
 		RectangleButton temp = (RectangleButton) selected.clone();
 		temp.setRect(createAppliedRectangle(index));
@@ -160,11 +162,24 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		
 		//if top filter, index == size right now
 		if(index < appliedFilters.size()){
-			index++; //slide the buttons after the added one
-			for(RectangleButton button : appliedFilters.subList(index, appliedFilters.size())){
-				button.setRect(createAppliedRectangle(index));
-				index++;
-			}
+			redrawAppliedRectangles(index++); //slide the buttons after the added one
+		}
+	}
+	
+	private void removeFromApplied(int index){
+		appliedFilters.remove(index);
+		
+		//if top filter, index == size right now
+		if(index < appliedFilters.size()){
+			redrawAppliedRectangles(index); //slide the buttons after removed one
+		}
+	}
+	
+	//redraw rectangles starting at index
+	private void redrawAppliedRectangles(int index){
+		for(RectangleButton button : appliedFilters.subList(index, appliedFilters.size())){
+			button.setRect(createAppliedRectangle(index));
+			index++;
 		}
 	}
 	
@@ -182,6 +197,8 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		}
 		else return index;
 	}
+	
+	// LISTENER LOGIC --------------------------------------------------------------------
 	
 	//clock update
 	public void actionPerformed(ActionEvent e) {
@@ -204,6 +221,13 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 					selected = new RectangleButton(button);
 				}
 			}
+			
+			for(RectangleButton button : appliedFilters){
+				if(button.contains(point)){
+					selected = new RectangleButton(button);
+					removeFromApplied(getAppliedIndex(point));
+				}
+			}
 		}
 		repaint();
 	}
@@ -223,6 +247,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	//dynamically change view
 	public void componentResized(ComponentEvent e) {
 		initBoxes();
+		redrawAppliedRectangles(0);
 		repaint();
 	}
 	
