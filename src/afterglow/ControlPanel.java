@@ -21,7 +21,9 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
@@ -49,7 +51,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	
 	//dynamic
 	RectangleButton selected;
-	RectangleButton[] appliedFilters;
+	List<RectangleButton> appliedFilters;
 	
 	//screen areas
 	Rectangle2D dropBox;
@@ -61,19 +63,23 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
     	addMouseListener(this); //add the listener for mouse movement
     	addMouseMotionListener(this);
     	addComponentListener(this);
-    	
-    	GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		
+		init();
+		initBoxes();
+	}
+	
+	private void init() throws FontFormatException, IOException{
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		roboto = Font.createFont(Font.PLAIN, new File("assets/fonts/Roboto-Thin.ttf")).deriveFont(40f);
 		ge.registerFont(roboto);
 		logo = ImageIO.read(new File("logo.png"));
 		background = ImageIO.read(new File("assets/transparent.png"));
 		clock.start();
-		
-		init();
+		appliedFilters = new ArrayList<RectangleButton>();
 	}
 	
 	//used to dynamically choose positions, sizes, etc...
-	private void init() throws FontFormatException, IOException{	
+	private void initBoxes(){	
 		time = new Rectangle2D.Double(50, 50, 100, 100);
 		
 		bulkSort = new RectangleButton(50, 250, 100, 100,"Sort",Color.blue);
@@ -121,6 +127,12 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			drawText(g, g2, fm, button, rectText, button.getText());
 		}
 		
+		for(RectangleButton button : appliedFilters){
+			g2.setColor(button.getColor());
+			g2.fill(button);
+			drawText(g, g2, fm, button, rectText, button.getText());
+		}
+		
 		//draw the selected rectangle if you are dragging one
 		if(selected != null){
 			g2.setColor(selected.getColor());
@@ -139,6 +151,36 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
         int x = ((int) rect.getWidth() - (int) rectText.getWidth()) / 2 + (int) rect.getX();
         int y = ((int) rect.getHeight() - (int) rectText.getHeight()) / 2 + fm.getAscent() + (int) rect.getY();
         g.drawString(text, x, y);
+	}
+	
+	private void addToApplied(int index, RectangleButton selected){
+		RectangleButton temp = (RectangleButton) selected.clone();
+		temp.setRect(createAppliedRectangle(index));
+		appliedFilters.add(index, temp);
+		
+		//if top filter, index == size right now
+		if(index < appliedFilters.size()){
+			index++; //slide the buttons after the added one
+			for(RectangleButton button : appliedFilters.subList(index, appliedFilters.size())){
+				button.setRect(createAppliedRectangle(index));
+				index++;
+			}
+		}
+	}
+	
+	//first index is 0
+	private Rectangle2D createAppliedRectangle(int index){
+		double x = dropBox.getX();
+		double width = dropBox.getWidth();
+		return new Rectangle2D.Double(x + width*1/5, 20 + (20 + 50)*(index), width*3/5, 50);
+	}
+	
+	private int getAppliedIndex(Point point){
+		int index = (int) (point.getY())/(20+50); //leaves out extra decimals! :)
+		if(index >= appliedFilters.size()){
+			return appliedFilters.size();
+		}
+		else return index;
 	}
 	
 	//clock update
@@ -170,6 +212,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		//drag & dropped
 		if(selected != null){
 			if(dropBox.contains(e.getPoint())){
+				addToApplied(getAppliedIndex(e.getPoint()), selected);
 				canvas.setFilter(selected.getFilter());
 			}
 			selected = null;
@@ -179,9 +222,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 
 	//dynamically change view
 	public void componentResized(ComponentEvent e) {
-		try { init(); }
-		catch (FontFormatException e1)	{ e1.printStackTrace(); }
-		catch (IOException e1)			{ e1.printStackTrace(); }
+		initBoxes();
 		repaint();
 	}
 	
