@@ -370,7 +370,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			}
 			break;
 		case 'b':
-			// take screenshot
+			canvas.screenshot();
 			break;
 		case '1':
 			speedDial(1);

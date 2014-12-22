@@ -3,7 +3,10 @@ package afterglow;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -20,6 +23,7 @@ public class GlowPanel extends JPanel {
 	private BufferedImage image;
 	private Mat current;
 	private ArrayList<Filter> filters;
+	int imageCount;
 
 	public GlowPanel() throws IOException {
 		super();
@@ -109,5 +113,26 @@ public class GlowPanel extends JPanel {
 	public void removeFilter(int index) {
 		filters.remove(index + 1);
 	}
+	
+	public void screenshot(){
+		imageCount++;
+		BufferedImage bi = createBufferedImage(current);
+		File outputFile = new File("images");
+		outputFile.mkdirs();
+		File outputfile = new File(outputFile, "afterglow" + imageCount + ".png");
+	    try {
+			ImageIO.write(bi, "png", outputfile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
+	private static BufferedImage createBufferedImage(Mat mat) {
+	    BufferedImage image = new BufferedImage(mat.width(), mat.height(), BufferedImage.TYPE_3BYTE_BGR);
+	    WritableRaster raster = image.getRaster();
+	    DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
+	    byte[] data = dataBuffer.getData();
+	    mat.get(0, 0, data);
+	    return image;
+	}
 }
