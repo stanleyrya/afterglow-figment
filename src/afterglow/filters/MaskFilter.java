@@ -1,4 +1,4 @@
-package afterglow;
+package afterglow.filters;
 
 import java.util.ArrayList;
 

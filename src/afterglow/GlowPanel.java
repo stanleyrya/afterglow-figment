@@ -18,6 +18,9 @@ import org.opencv.core.MatOfByte;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 
+import afterglow.filters.Filter;
+import afterglow.filters.MirrorFilter;
+
 public class GlowPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private BufferedImage image;
@@ -119,9 +122,9 @@ public class GlowPanel extends JPanel {
 		BufferedImage bi = createBufferedImage(current);
 		File outputFile = new File("images");
 		outputFile.mkdirs();
-		File outputfile = new File(outputFile, "afterglow" + imageCount + ".png");
+		outputFile = new File(outputFile, "afterglow" + imageCount + ".png");
 	    try {
-			ImageIO.write(bi, "png", outputfile);
+			ImageIO.write(bi, "png", outputFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -30,6 +30,8 @@ import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import afterglow.filters.Filter;
+
 public class ControlPanel extends JPanel implements ActionListener, MouseListener, MouseMotionListener, ComponentListener, KeyListener {
 	private static final long serialVersionUID = 1L;
 	private Font roboto;
