@@ -240,6 +240,14 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		}
 	}
 
+	public void mouseClicked(MouseEvent e) {
+		for (RectangleButton button : buttons) {
+			if (button.contains(e.getPoint())) {
+				addToApplied(appliedFilters.size(), button);
+			}
+		}
+	}
+	
 	@SuppressWarnings("unchecked")
 	public void mouseDragged(MouseEvent e) {
 		Point point = e.getPoint();
@@ -308,7 +316,6 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		repaint();
 	}
 	
-	public void mouseClicked(MouseEvent e) {}
 	public void mouseMoved(MouseEvent e) {}
 	public void mousePressed(MouseEvent e) {}
 	public void mouseEntered(MouseEvent e) {}
