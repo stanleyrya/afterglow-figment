@@ -37,9 +37,17 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	private BufferedImage background;
 	private GlowPanel canvas;
 	private Timer clock = new Timer(10000, this); // timer - every 10 seconds
+	private int speedDial = 0;
 
 	// boxes
 	Rectangle2D time;
+	RectangleButton bulkSort;
+	RectangleButton fade;
+	RectangleButton halo;
+	RectangleButton invert;
+	RectangleButton mask;
+	RectangleButton threshold;
+	RectangleButton trace;
 	ArrayList<RectangleButton> buttons;
 	
 	private int buffer = 20;
@@ -94,13 +102,51 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 
 		buttons = new ArrayList<RectangleButton>(7);
 		
-		buttons.add(createButtonRectangle(0, "Sort", Color.blue));
-		buttons.add(createButtonRectangle(1, "Fade", Color.cyan));
-		buttons.add(createButtonRectangle(2, "Halo", Color.green));
-		buttons.add(createButtonRectangle(3, "Invert", Color.magenta));
-		buttons.add(createButtonRectangle(4, "Mask", Color.red));
-		buttons.add(createButtonRectangle(5, "Threshold", Color.orange));
-		buttons.add(createButtonRectangle(6, "Trace", Color.blue));
+		buttons.add(bulkSort = createButtonRectangle(0, "Sort", Color.blue));
+		buttons.add(fade = createButtonRectangle(1, "Fade", Color.cyan));
+		buttons.add(halo = createButtonRectangle(2, "Halo", Color.green));
+		buttons.add(invert = createButtonRectangle(3, "Invert", Color.magenta));
+		buttons.add(mask = createButtonRectangle(4, "Mask", Color.red));
+		buttons.add(threshold = createButtonRectangle(5, "Threshold", Color.orange));
+		buttons.add(trace = createButtonRectangle(6, "Trace", Color.blue));
+	}
+	
+	private void speedDial(int dial){
+		clearApplied();
+		speedDial += dial;
+		
+		switch(speedDial){
+		case -1:
+			speedDial = 4;
+			speedDial(0);
+			break;
+		case 0:
+			break;
+		case 1:
+			addToApplied(0, bulkSort);
+			addToApplied(1, halo);
+			break;
+		case 2:
+			addToApplied(0, invert);
+			addToApplied(1, threshold);
+			break;
+		case 3:
+			addToApplied(0, trace);
+			addToApplied(1, invert);
+			addToApplied(2, halo);
+			break;
+		case 4:
+			addToApplied(0, invert);
+			addToApplied(1, fade);
+			addToApplied(0, trace);
+			addToApplied(1, threshold);
+			addToApplied(0, invert);
+			addToApplied(1, fade);
+			break;
+		default:
+			speedDial = 0;
+			speedDial(0);
+		}
 	}
 
 	// first index is 0
@@ -203,6 +249,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	}
 
 	private void removeFromApplied(int index) {
+		if(appliedFilters.size() == 0) return;
 		appliedFilters.remove(index);
 		canvas.removeFilter(index);
 
@@ -307,28 +354,35 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	public void keyTyped(KeyEvent e) {
 		switch(e.getKeyChar()){
 		case 'a':
+			if(highlightedList == buttons){
+				addToApplied(appliedFilters.size(), highlightedList.get(highlightedIndex));
+			}
+			else{
+				removeFromApplied(appliedFilters.size()-1);
+				int size = highlightedList.size();
+				if(size == highlightedIndex){
+					if(size == 0){
+						highlightedList = buttons;
+						break;
+					}
+					highlightedIndex--;
+				}
+			}
 			break;
 		case 'b':
-			clearApplied();
-			addToApplied(0, bulkSort);
-			addToApplied(1, halo);
+			// take screenshot
 			break;
 		case '1':
-			clearApplied();
-			addToApplied(0, invert);
-			addToApplied(1, threshold);
+			speedDial(1);
 			break;
 		case '2':
-			clearApplied();
-			addToApplied(0, trace);
-			addToApplied(1, invert);
-			addToApplied(2, halo);
+			speedDial(-1);
 			break;
 		case '-':
 			removeFromApplied(appliedFilters.size()-1);
 			break;
 		case '+':
-			addToApplied(appliedFilters.size(), buttons[(int) Math.round(Math.random() * buttons.length)]);
+			addToApplied(appliedFilters.size(), buttons.get((int) Math.round(Math.random() * buttons.size())));
 			break;
 		case 'h':
 			clearApplied();
@@ -340,19 +394,20 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	}
 	
 	public void keyPressed(KeyEvent e) {
-		if(highlightedList == null){
-			highlightedList = buttons;
-			highlightedIndex = 0;
-		}
-		
 		int keyCode = e.getKeyCode();
 		switch( keyCode ) { 
 		case KeyEvent.VK_UP:
 		case KeyEvent.VK_LEFT:
+			if(highlightedList == null){
+				highlightedList = buttons;
+				highlightedIndex = 0;
+			}
+			
 			highlightedIndex--;
 			if(highlightedIndex == -1){
 				if(highlightedList == buttons){
-					highlightedList = appliedFilters;
+					if(appliedFilters.size() > 0)
+						highlightedList = appliedFilters;
 				}
 				else{
 					highlightedList = buttons;
@@ -362,13 +417,19 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			break;
 		case KeyEvent.VK_DOWN:
 		case KeyEvent.VK_RIGHT :
+			if(highlightedList == null){
+				highlightedList = buttons;
+				highlightedIndex = 0;
+			}
+			
 //			if(getButtonRectangleYIndex(highlightedIndex + 1) != getButtonRectangleYIndex(highlightedIndex)){
 //				//going out of buttons
 //			}
 			highlightedIndex++;
 			if(highlightedIndex == highlightedList.size()){
 				if(highlightedList == buttons){
-					highlightedList = appliedFilters;
+					if(appliedFilters.size() > 0)
+						highlightedList = appliedFilters;
 				}
 				else{
 					highlightedList = buttons;
