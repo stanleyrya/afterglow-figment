@@ -382,7 +382,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			removeFromApplied(appliedFilters.size()-1);
 			break;
 		case '+':
-			addToApplied(appliedFilters.size(), buttons.get((int) Math.round(Math.random() * buttons.size())));
+			addToApplied(appliedFilters.size(), buttons.get((int) Math.round(Math.random() * (buttons.size()-1))));
 			break;
 		case 'h':
 			clearApplied();
