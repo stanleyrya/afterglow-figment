@@ -1,5 +1,6 @@
 package afterglow;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
@@ -39,19 +40,17 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 
 	// boxes
 	Rectangle2D time;
-	RectangleButton bulkSort;
-	RectangleButton fade;
-	RectangleButton halo;
-	RectangleButton invert;
-	RectangleButton mask;
-	RectangleButton mirror;
-	RectangleButton threshold;
-	RectangleButton trace;
-	RectangleButton[] buttons;
+	ArrayList<RectangleButton> buttons;
+	
+	private int buffer = 20;
+	private int buttonWidth = 200;
+	private int buttonHeight = 50;
 
 	// dynamic
 	RectangleButton selected;
 	ArrayList<RectangleButton> appliedFilters;
+	ArrayList<RectangleButton> highlightedList;
+	int highlightedIndex;
 
 	// screen areas
 	Rectangle2D dropBox;
@@ -71,6 +70,10 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		initBoxes();
 		this.requestFocusInWindow();
 	}
+	
+	public void setCanvas(GlowPanel panel) {
+		canvas = panel;
+	}
 
 	private void init() throws FontFormatException, IOException {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -89,37 +92,36 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		dropBox = new Rectangle2D.Double(this.getWidth() * 3/4, 0, this.getWidth() * 1/4, this.getHeight());
 		buttonBox = new Rectangle2D.Double(0, 225, this.getWidth() * 3/4, this.getHeight());
 
-		bulkSort = createButtonRectangle(0, "Sort", Color.blue);
-		fade = createButtonRectangle(1, "Fade", Color.cyan);
-		halo = createButtonRectangle(2, "Halo", Color.green);
-		invert = createButtonRectangle(3, "Invert", Color.magenta);
-		mask = createButtonRectangle(4, "Mask", Color.red);
-		threshold = createButtonRectangle(5, "Threshold", Color.orange);
-		trace = createButtonRectangle(6, "Trace", Color.blue);
-		buttons = new RectangleButton[] { bulkSort, fade, halo, invert, mask, threshold, trace };
+		buttons = new ArrayList<RectangleButton>(7);
+		
+		buttons.add(createButtonRectangle(0, "Sort", Color.blue));
+		buttons.add(createButtonRectangle(1, "Fade", Color.cyan));
+		buttons.add(createButtonRectangle(2, "Halo", Color.green));
+		buttons.add(createButtonRectangle(3, "Invert", Color.magenta));
+		buttons.add(createButtonRectangle(4, "Mask", Color.red));
+		buttons.add(createButtonRectangle(5, "Threshold", Color.orange));
+		buttons.add(createButtonRectangle(6, "Trace", Color.blue));
 	}
 
 	// first index is 0
 	private RectangleButton createButtonRectangle(int index, String text, Color color) {
-		int buffer = 20;
-		int buttonWidth = 200;
-		int buttonHeight = 50;
 		
 		double areaX = buttonBox.getX() + buffer;
 		double areaY = buttonBox.getY() + buffer;
 		int areaWidth = (int) buttonBox.getWidth() - (buttonWidth + buffer);
 		
 		// which row
-		int yIndex = ((buttonWidth + buffer) * index) / areaWidth;
+		int yIndex = getButtonRectangleYIndex(index);
 
 		// which coloumn
 		int xIndex = (((buttonWidth + buffer) * index) % areaWidth) / (buttonWidth + buffer);
 
 		return new RectangleButton(new Rectangle2D.Double(areaX + (buttonWidth + buffer) * xIndex, areaY + (buttonHeight + buffer) * yIndex, buttonWidth, buttonHeight), text, color);
 	}
-
-	public void setCanvas(GlowPanel panel) {
-		canvas = panel;
+	
+	private int getButtonRectangleYIndex(int index){
+		int areaWidth = (int) buttonBox.getWidth() - (buttonWidth + buffer);
+		return ((buttonWidth + buffer) * index) / areaWidth;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -166,6 +168,14 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			g2.fill(selected);
 			drawText(g, g2, fm, selected, rectText, selected.getText());
 		}
+		
+		if(highlightedList != null){
+			g2.setColor(Color.red);
+			g2.setStroke(new BasicStroke(5));
+			int buffer = 7;
+			RectangleButton highlighted = highlightedList.get(highlightedIndex);
+			g2.drawRect((int) highlighted.getX() - buffer, (int) highlighted.getY() - buffer, (int) highlighted.getWidth() + buffer*2, (int) highlighted.getHeight() + buffer*2);
+		}
 	}
 
 	// draws text in the center of a rectangle, could use refactoring with method parameters
@@ -178,7 +188,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	}
 
 	// APPLIED FILTER LIST LOGIC
-	// ---------------------------------------------------------
+	// -------------------------------------------------------------------
 
 	private void addToApplied(int index, RectangleButton selected) {
 		RectangleButton temp = (RectangleButton) selected.clone();
@@ -329,6 +339,48 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		repaint();
 	}
 	
+	public void keyPressed(KeyEvent e) {
+		if(highlightedList == null){
+			highlightedList = buttons;
+			highlightedIndex = 0;
+		}
+		
+		int keyCode = e.getKeyCode();
+		switch( keyCode ) { 
+		case KeyEvent.VK_UP:
+		case KeyEvent.VK_LEFT:
+			highlightedIndex--;
+			if(highlightedIndex == -1){
+				if(highlightedList == buttons){
+					highlightedList = appliedFilters;
+				}
+				else{
+					highlightedList = buttons;
+				}
+				highlightedIndex = highlightedList.size()-1;
+			}
+			break;
+		case KeyEvent.VK_DOWN:
+		case KeyEvent.VK_RIGHT :
+//			if(getButtonRectangleYIndex(highlightedIndex + 1) != getButtonRectangleYIndex(highlightedIndex)){
+//				//going out of buttons
+//			}
+			highlightedIndex++;
+			if(highlightedIndex == highlightedList.size()){
+				if(highlightedList == buttons){
+					highlightedList = appliedFilters;
+				}
+				else{
+					highlightedList = buttons;
+				}
+				highlightedIndex = 0;
+			}
+			break;
+		}
+		
+		repaint();
+	}
+	
 	public void mouseMoved(MouseEvent e) {}
 	public void mousePressed(MouseEvent e) {}
 	public void mouseEntered(MouseEvent e) {}
@@ -336,7 +388,6 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	public void componentMoved(ComponentEvent e) {}
 	public void componentShown(ComponentEvent e) {}
 	public void componentHidden(ComponentEvent e) {}
-	public void keyPressed(KeyEvent e) {}
 	public void keyReleased(KeyEvent e) {}
 }
 
