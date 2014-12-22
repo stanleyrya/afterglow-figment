@@ -204,7 +204,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	
 	private void clearApplied() {
 		appliedFilters.clear();
-		canvas.setFilters(null);
+		canvas.setFilters(new ArrayList<Filter>());
 	}
 
 	// redraw rectangles starting at index
