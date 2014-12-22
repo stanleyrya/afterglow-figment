@@ -22,7 +22,7 @@ public class ThresholdFilter extends Filter {
 		Core.multiply(newFrame, mergedNewMask, maskedNew);
 
 		Mat oldMask = new Mat();
-		Imgproc.threshold(mask, oldMask, .9, 1, Imgproc.THRESH_BINARY_INV);
+		Imgproc.threshold(mask, oldMask, .1, 1, Imgproc.THRESH_BINARY_INV);
 		Mat mergedOldMask = new Mat();
 		Core.merge(Arrays.asList(oldMask, oldMask, oldMask), mergedOldMask);
 		Mat maskedOld = new Mat();
