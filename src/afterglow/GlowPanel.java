@@ -59,14 +59,14 @@ public class GlowPanel extends JPanel {
 		this.setBackground(Color.BLACK);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void update(Mat webcam_image) {
 		Mat old = current;
 		if (current == null)
 			old = webcam_image;
 		current = webcam_image;
-
-		for (Filter filter : (ArrayList<Filter>) filters.clone())
+		
+		Filter[] a = new Filter[filters.size()];
+		for (Filter filter : filters.toArray(a))
 			current = filter.process(old, current);
 		this.matToBufferedImage(current);
 		this.repaint();
@@ -77,6 +77,10 @@ public class GlowPanel extends JPanel {
 		// open and read from the video stream
 		Mat webcam_image = new Mat();
 		VideoCapture webCam = new VideoCapture(0);
+//		webCam.set(3, 1024.0); //small size in case of lag
+//		webCam.set(4, 576.0);
+		webCam.set(3, 1280.0);
+		webCam.set(4, 720.0);
 
 		if (webCam.isOpened()) {
 			while (true) {
