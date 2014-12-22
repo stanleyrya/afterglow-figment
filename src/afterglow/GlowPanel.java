@@ -94,6 +94,7 @@ public class GlowPanel extends JPanel {
 	}
 
 	public void setFilters(ArrayList<Filter> fs) {
+		if(fs == null) fs = new ArrayList<Filter>();
 		filters = fs;
 		filters.add(0, new MirrorFilter());
 	}

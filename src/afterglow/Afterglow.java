@@ -19,9 +19,6 @@ public class Afterglow {
 		ControlFrame crame = new ControlFrame("Afterglow");
 		GlowFrame frame = new GlowFrame("Afterglow");
 		frame.start(crame);
-//		frame.start(new MirrorFilter(new FadeFilter(new HaloFilter(new TraceFilter()))));
-//		frame.start(new MirrorFilter(new BulkSortFilter(new HaloFilter())));
-//		frame.start(new MirrorFilter(new BulkSortFilter()));
 	}
 
 }

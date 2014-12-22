@@ -49,7 +49,7 @@ public class ControlFrame extends JFrame {
 
 		setSize(1280, 720);
 		setVisible(true);
-
+		displayPanel.start();
 	}
 	
 	@SuppressWarnings({"unchecked", "rawtypes"})
@@ -67,4 +67,5 @@ public class ControlFrame extends JFrame {
 	public void setCanvas(GlowPanel panel) {
 		displayPanel.setCanvas(panel);
 	}
+
 }

@@ -1,7 +1,6 @@
 package afterglow;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.FontMetrics;
@@ -14,6 +13,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -28,8 +29,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-public class ControlPanel extends JPanel implements ActionListener,
-		MouseListener, MouseMotionListener, ComponentListener {
+public class ControlPanel extends JPanel implements ActionListener, MouseListener, MouseMotionListener, ComponentListener, KeyListener {
 	private static final long serialVersionUID = 1L;
 	private Font roboto;
 	private BufferedImage logo;
@@ -59,21 +59,22 @@ public class ControlPanel extends JPanel implements ActionListener,
 
 	public ControlPanel() throws FontFormatException, IOException {
 		super();
-		setPreferredSize(new Dimension(500, 500)); // size of program
 		setBackground(Color.black); // initial background color
 		addMouseListener(this); // add the listener for mouse movement
 		addMouseMotionListener(this);
 		addComponentListener(this);
-
+		addKeyListener(this);
 		init();
+	}
+	
+	public void start() throws FontFormatException, IOException {
 		initBoxes();
+		this.requestFocusInWindow();
 	}
 
 	private void init() throws FontFormatException, IOException {
-		GraphicsEnvironment ge = GraphicsEnvironment
-				.getLocalGraphicsEnvironment();
-		roboto = Font.createFont(Font.PLAIN,
-				new File("assets/fonts/Roboto-Thin.ttf")).deriveFont(40f);
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		roboto = Font.createFont(Font.PLAIN, new File("assets/fonts/Roboto-Thin.ttf")).deriveFont(40f);
 		ge.registerFont(roboto);
 		logo = ImageIO.read(new File("logo.png"));
 		background = ImageIO.read(new File("assets/transparent.png"));
@@ -85,10 +86,8 @@ public class ControlPanel extends JPanel implements ActionListener,
 	private void initBoxes() {
 		time = new Rectangle2D.Double(50, 50, 100, 100);
 
-		dropBox = new Rectangle2D.Double(this.getWidth() * 3 / 4, 0,
-				this.getWidth() * 1 / 4, this.getHeight());
-		buttonBox = new Rectangle2D.Double(0, 225, this.getWidth() * 3 / 4,
-				this.getHeight());
+		dropBox = new Rectangle2D.Double(this.getWidth() * 3/4, 0, this.getWidth() * 1/4, this.getHeight());
+		buttonBox = new Rectangle2D.Double(0, 225, this.getWidth() * 3/4, this.getHeight());
 
 		bulkSort = createButtonRectangle(0, "Sort", Color.blue);
 		fade = createButtonRectangle(1, "Fade", Color.cyan);
@@ -97,31 +96,26 @@ public class ControlPanel extends JPanel implements ActionListener,
 		mask = createButtonRectangle(4, "Mask", Color.red);
 		threshold = createButtonRectangle(5, "Threshold", Color.orange);
 		trace = createButtonRectangle(6, "Trace", Color.blue);
-		buttons = new RectangleButton[] { bulkSort, fade, halo, invert, mask,
-				threshold, trace };
+		buttons = new RectangleButton[] { bulkSort, fade, halo, invert, mask, threshold, trace };
 	}
 
 	// first index is 0
-	private RectangleButton createButtonRectangle(int index, String text,
-			Color color) {
-		double x = buttonBox.getX();
-		double y = buttonBox.getY();
-		double width = buttonBox.getWidth();
-		double height = buttonBox.getHeight();
-
+	private RectangleButton createButtonRectangle(int index, String text, Color color) {
+		int buffer = 20;
+		int buttonWidth = 200;
+		int buttonHeight = 50;
+		
+		double areaX = buttonBox.getX() + buffer;
+		double areaY = buttonBox.getY() + buffer;
+		int areaWidth = (int) buttonBox.getWidth() - (buttonWidth + buffer);
+		
 		// which row
-		int yIndex = (int) ((20 + (20 + 100) * index + 100) / width);
-		//System.out.print("y index: " + yIndex);
+		int yIndex = ((buttonWidth + buffer) * index) / areaWidth;
 
 		// which coloumn
-		int xIndex = ((int) ((20 + (20 + 100) * index + 100) % width)) / 120;
-		if (yIndex == 0)
-			xIndex--;
-		//System.out.println("    x index: " + xIndex);
+		int xIndex = (((buttonWidth + buffer) * index) % areaWidth) / (buttonWidth + buffer);
 
-		return new RectangleButton(new Rectangle2D.Double(x + 20 + (20 + 100)
-				* xIndex, y + 20 + (20 + 100) * (yIndex), 100, 100), text,
-				color);
+		return new RectangleButton(new Rectangle2D.Double(areaX + (buttonWidth + buffer) * xIndex, areaY + (buttonHeight + buffer) * yIndex, buttonWidth, buttonHeight), text, color);
 	}
 
 	public void setCanvas(GlowPanel panel) {
@@ -147,10 +141,8 @@ public class ControlPanel extends JPanel implements ActionListener,
 		g2.setColor(Color.orange);
 		g2.fill(time);
 		String minute = "" + Calendar.getInstance().get(Calendar.MINUTE);
-		if (minute.length() == 1)
-			minute = "0" + minute;
-		drawText(g, g2, fm, time, rectText,
-				Calendar.getInstance().get(Calendar.HOUR) + ":" + minute);
+		if (minute.length() == 1) minute = "0" + minute;
+		drawText(g, g2, fm, time, rectText, Calendar.getInstance().get(Calendar.HOUR) + ":" + minute);
 
 		// draw each draggable rectangle button
 		for (RectangleButton button : buttons) {
@@ -164,6 +156,9 @@ public class ControlPanel extends JPanel implements ActionListener,
 			g2.fill(button);
 			drawText(g, g2, fm, button, rectText, button.getText());
 		}
+		
+		// "background"
+		g2.drawImage(background, 0, 400, null);
 
 		// draw the selected rectangle if you are dragging one
 		if (selected != null) {
@@ -171,21 +166,14 @@ public class ControlPanel extends JPanel implements ActionListener,
 			g2.fill(selected);
 			drawText(g, g2, fm, selected, rectText, selected.getText());
 		}
-
-		// "background"
-		g2.drawImage(background, 0, 400, null);
 	}
 
-	// draws text in the center of a rectangle, could use refactoring with
-	// method parameters
-	private void drawText(Graphics g, Graphics2D g2, FontMetrics fm,
-			Rectangle2D rect, Rectangle2D rectText, String text) {
+	// draws text in the center of a rectangle, could use refactoring with method parameters
+	private void drawText(Graphics g, Graphics2D g2, FontMetrics fm, Rectangle2D rect, Rectangle2D rectText, String text) {
 		g.setColor(Color.white);
 		rectText = fm.getStringBounds(text, g2);
-		int x = ((int) rect.getWidth() - (int) rectText.getWidth()) / 2
-				+ (int) rect.getX();
-		int y = ((int) rect.getHeight() - (int) rectText.getHeight()) / 2
-				+ fm.getAscent() + (int) rect.getY();
+		int x = ((int) rect.getWidth() - (int) rectText.getWidth()) / 2 + (int) rect.getX();
+		int y = ((int) rect.getHeight() - (int) rectText.getHeight()) / 2 + fm.getAscent() + (int) rect.getY();
 		g.drawString(text, x, y);
 	}
 
@@ -200,8 +188,7 @@ public class ControlPanel extends JPanel implements ActionListener,
 
 		// if top filter, index == size right now
 		if (index < appliedFilters.size()) {
-			redrawAppliedRectangles(index++); // slide the buttons after the
-												// added one
+			redrawAppliedRectangles(index++); // slide the buttons after the added one
 		}
 	}
 
@@ -211,9 +198,13 @@ public class ControlPanel extends JPanel implements ActionListener,
 
 		// if top filter, index == size right now
 		if (index < appliedFilters.size()) {
-			redrawAppliedRectangles(index); // slide the buttons after removed
-											// one
+			redrawAppliedRectangles(index); // slide the buttons after removed one
 		}
+	}
+	
+	private void clearApplied() {
+		appliedFilters.clear();
+		canvas.setFilters(null);
 	}
 
 	// redraw rectangles starting at index
@@ -228,8 +219,7 @@ public class ControlPanel extends JPanel implements ActionListener,
 	private Rectangle2D createAppliedRectangle(int index) {
 		double x = dropBox.getX();
 		double width = dropBox.getWidth();
-		return new Rectangle2D.Double(x + width * 1 / 5, 20 + (20 + 50)
-				* (index), width * 3 / 5, 50);
+		return new Rectangle2D.Double(x + width * 1 / 5, 20 + (20 + 50) * (index), 200, 50);
 	}
 
 	private int getAppliedIndex(Point point) {
@@ -246,8 +236,7 @@ public class ControlPanel extends JPanel implements ActionListener,
 	// clock update
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == clock) {
-			repaint(new Rectangle((int) time.getX(), (int) time.getY(),
-					(int) time.getWidth(), (int) time.getHeight()));
+			repaint(new Rectangle((int) time.getX(), (int) time.getY(), (int) time.getWidth(), (int) time.getHeight()));
 		}
 	}
 
@@ -259,8 +248,7 @@ public class ControlPanel extends JPanel implements ActionListener,
 
 		if (selected != null) {
 			selected.setRect(x - selected.getWidth() / 2,
-					y - selected.getHeight() / 2, selected.getWidth(),
-					selected.getHeight());
+					y - selected.getHeight() / 2, selected.getWidth(), selected.getHeight());
 		} else {
 			for (RectangleButton button : buttons) {
 				if (button.contains(point)) {
@@ -296,30 +284,40 @@ public class ControlPanel extends JPanel implements ActionListener,
 		redrawAppliedRectangles(0);
 		repaint();
 	}
-
-	public void mouseClicked(MouseEvent e) {
+	
+	//for use with wii remote after key mapping
+	public void keyTyped(KeyEvent e) {
+		switch(e.getKeyChar()){
+		case 'a':
+			break;
+		case 'b':
+			break;
+		case '1':
+			break;
+		case '2':
+			break;
+		case '-':
+			removeFromApplied(appliedFilters.size()-1);
+			break;
+		case '+':
+			break;
+		case 'h':
+			clearApplied();
+			break;
+		}
+		repaint();
 	}
-
-	public void mouseMoved(MouseEvent e) {
-	}
-
-	public void mousePressed(MouseEvent e) {
-	}
-
-	public void mouseEntered(MouseEvent e) {
-	}
-
-	public void mouseExited(MouseEvent e) {
-	}
-
-	public void componentMoved(ComponentEvent e) {
-	}
-
-	public void componentShown(ComponentEvent e) {
-	}
-
-	public void componentHidden(ComponentEvent e) {
-	}
+	
+	public void mouseClicked(MouseEvent e) {}
+	public void mouseMoved(MouseEvent e) {}
+	public void mousePressed(MouseEvent e) {}
+	public void mouseEntered(MouseEvent e) {}
+	public void mouseExited(MouseEvent e) {}
+	public void componentMoved(ComponentEvent e) {}
+	public void componentShown(ComponentEvent e) {}
+	public void componentHidden(ComponentEvent e) {}
+	public void keyPressed(KeyEvent e) {}
+	public void keyReleased(KeyEvent e) {}
 }
 
 class RectangleButton extends Rectangle2D.Double {
@@ -345,8 +343,7 @@ class RectangleButton extends Rectangle2D.Double {
 	}
 
 	public RectangleButton(RectangleButton button) {
-		super(button.getX(), button.getY(), button.getWidth(), button
-				.getHeight());
+		super(button.getX(), button.getY(), button.getWidth(), button.getHeight());
 		this.text = button.getText();
 		this.color = button.getColor();
 		this.filter = Filter.makeFilter(text);
