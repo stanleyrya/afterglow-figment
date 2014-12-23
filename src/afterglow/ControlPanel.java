@@ -44,9 +44,12 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	private GlowPanel canvas;
 	private Timer clock = new Timer(10000, this); // timer - every 10 seconds
 	private Timer render = new Timer(1000/60, this); // for rendering - 60 fp
+	private Timer blinker = new Timer(500, this); // for rendering - 60 fp
+	double recordCircleSize = .75;
 	private double recordButtonSize = .5;
 	private int speedDial = 0;
 	private boolean recording = false;
+	private boolean blink = false;
 
 	// boxes
 	Rectangle2D time;
@@ -189,14 +192,11 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	@SuppressWarnings("unchecked")
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g); // clears the board
-		g.setFont(roboto);
 		Graphics2D g2 = (Graphics2D) g;
 	    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
 	             RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 	    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 	    		RenderingHints.VALUE_ANTIALIAS_ON);
-		FontMetrics fm = g2.getFontMetrics();
-		Rectangle2D rectText = null;
 
 		// logo and background
 		g.drawImage(logo, (int)dashBox.getWidth() - 20, 0, null);
@@ -214,36 +214,37 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		// time
 		String minute = "" + Calendar.getInstance().get(Calendar.MINUTE);
 		if (minute.length() == 1) minute = "0" + minute;
-		drawText(g, g2, fm, time, rectText, Calendar.getInstance().get(Calendar.HOUR) + ":" + minute);
+		drawText(g2, roboto, Color.white, time, Calendar.getInstance().get(Calendar.HOUR) + ":" + minute);
 		
 		// download
 		g2.drawImage(downloadIcon, (int) (dashBox.getCenterX() - download.getHeight()/2), (int) download.getY(), (int) download.getHeight(), (int) download.getHeight(), null);
 		
 		// record
-		double circleSize = .75;
-		g2.drawOval((int) (dashBox.getCenterX() - record.getHeight()*circleSize/2), (int)(record.getCenterY() - record.getHeight()*circleSize/2), (int) (record.getHeight()*circleSize), (int) (record.getHeight()*circleSize));
+		g2.drawOval((int) (dashBox.getCenterX() - record.getHeight()*recordCircleSize/2), (int)(record.getCenterY() - record.getHeight()*recordCircleSize/2), (int) (record.getHeight()*recordCircleSize), (int) (record.getHeight()*recordCircleSize));
 		g2.setColor(Color.red);
 		g2.fillOval((int) (dashBox.getCenterX() - record.getHeight()*recordButtonSize/2), (int)(record.getCenterY() - record.getHeight()*recordButtonSize/2), (int) (record.getHeight()*recordButtonSize), (int) (record.getHeight()*recordButtonSize));
-
+		if(blink){
+			drawText(g2, roboto.deriveFont(20f), Color.red, new Rectangle2D.Double(0,record.getY(),(int) (dashBox.getCenterX() - record.getHeight()*recordCircleSize/2), record.getHeight()), "REC");
+		}
 		
 		// draw each draggable rectangle button
 		for (RectangleButton button : buttons) {
 			g2.setColor(button.getColor());
 			g2.fill(button);
-			drawText(g, g2, fm, button, rectText, button.getText());
+			drawText(g2, roboto, Color.white, button, button.getText());
 		}
 
 		for (RectangleButton button : (ArrayList<RectangleButton>) appliedFilters.clone()) {
 			g2.setColor(button.getColor());
 			g2.fill(button);
-			drawText(g, g2, fm, button, rectText, button.getText());
+			drawText(g2, roboto, Color.white, button, button.getText());
 		}
 
 		// draw the selected rectangle if you are dragging one
 		if (selected != null) {
 			g2.setColor(selected.getColor());
 			g2.fill(selected);
-			drawText(g, g2, fm, selected, rectText, selected.getText());
+			drawText(g2, roboto, Color.white, selected, selected.getText());
 		}
 		
 		if(highlightedList != null){
@@ -256,12 +257,14 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	}
 
 	// draws text in the center of a rectangle, could use refactoring with method parameters
-	private void drawText(Graphics g, Graphics2D g2, FontMetrics fm, Rectangle2D rect, Rectangle2D rectText, String text) {
-		g.setColor(Color.white);
-		rectText = fm.getStringBounds(text, g2);
+	private void drawText(Graphics2D g2, Font f, Color c, Rectangle2D rect, String text) {
+		g2.setFont(f);
+		FontMetrics fm = g2.getFontMetrics();
+		g2.setColor(c);
+		Rectangle2D rectText = fm.getStringBounds(text, g2);
 		int x = ((int) rect.getWidth() - (int) rectText.getWidth()) / 2 + (int) rect.getX();
 		int y = ((int) rect.getHeight() - (int) rectText.getHeight()) / 2 + fm.getAscent() + (int) rect.getY();
-		g.drawString(text, x, y);
+		g2.drawString(text, x, y);
 	}
 
 	// APPLIED FILTER LIST LOGIC
@@ -328,20 +331,33 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		}
 		if (e.getSource() == render) {
 			if(recording){
-				if(recordButtonSize < .75 && recordButtonSize >= .5) recordButtonSize += .02;
-				else if(recordButtonSize >= .75){
-					recordButtonSize = .75;
+				if(recordButtonSize < recordCircleSize + .04){
+					recordButtonSize += .01;
+					recordCircleSize -= .01;
 				}
-			}
-			else{
-				System.out.println(recordButtonSize);
-				if(recordButtonSize > .5) recordButtonSize -= .02;
-				else if(recordButtonSize <= .5){
-					recordButtonSize = .5;
+				else{
+					blinker.start();
 					render.stop();
 				}
 			}
-			repaint(new Rectangle((int) record.getX(), (int) record.getY(), (int) record.getWidth(), (int) record.getHeight()));
+			else{
+				blinker.stop();
+				blink = false;
+				if(recordButtonSize > .5){
+					recordButtonSize -= .01;
+				}
+				if(recordCircleSize < .75){
+					recordCircleSize += .01;
+				}
+				else{
+					render.stop();
+				}
+			}
+			repaint(new Rectangle(0, (int) record.getY(), (int) record.getWidth(), (int) record.getHeight()));
+		}
+		if(e.getSource() == blinker) {
+			blink = !blink;
+			repaint(new Rectangle(0, (int) record.getY(), (int) record.getWidth(), (int) record.getHeight()));
 		}
 	}
 
@@ -372,6 +388,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			}
 			else{
 				canvas.stopRecording();
+				render.start();
 			}
 		}
 		repaint();
