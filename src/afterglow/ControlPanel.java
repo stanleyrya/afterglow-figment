@@ -44,7 +44,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	private GlowPanel canvas;
 	private Timer clock = new Timer(10000, this); // timer - every 10 seconds
 	private Timer render = new Timer(1000/60, this); // for rendering - 60 fp
-	private Timer blinker = new Timer(500, this); // for rendering - 60 fp
+	private Timer blinker = new Timer(500, this); // for blinking record button - every half second
 	double recordCircleSize = .75;
 	private double recordButtonSize = .5;
 	private int speedDial = 0;
@@ -100,7 +100,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 
 	private void init() throws FontFormatException, IOException {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		roboto = Font.createFont(Font.PLAIN, new File("assets/fonts/Roboto-Thin.ttf")).deriveFont(40f);
+		roboto = Font.createFont(Font.PLAIN, new File("assets/fonts/Roboto-Light.ttf")).deriveFont(40f);
 		ge.registerFont(roboto);
 		logo = ImageIO.read(new File("logo.png"));
 		background = ImageIO.read(new File("assets/transparent2.png"));
@@ -199,7 +199,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	    		RenderingHints.VALUE_ANTIALIAS_ON);
 
 		// logo and background
-		g.drawImage(logo, (int)dashBox.getWidth() - 20, 0, null);
+		g2.drawImage(logo, (int)dashBox.getWidth() - 20, -10,(int) (logo.getWidth()*.38), (int) (logo.getHeight()*.38), null);
         g2.drawImage(background, 0, getHeight()-350, null);
 
 		// screen areas
