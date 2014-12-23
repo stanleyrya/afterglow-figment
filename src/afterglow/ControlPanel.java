@@ -475,8 +475,8 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			break;
 		case 'h':
 			clearApplied();
-			addToApplied(0, fade);
-			addToApplied(1, trace);
+			addToApplied(0, trace);
+			addToApplied(1, fade);
 			break;
 		}
 		repaint();
