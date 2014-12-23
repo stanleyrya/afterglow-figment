@@ -9,6 +9,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
@@ -25,8 +27,8 @@ public class GlowPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private BufferedImage image;
 	private Mat current;
+	private Mat old;
 	private ArrayList<Filter> filters;
-	int imageCount;
 
 	public GlowPanel() throws IOException {
 		super();
@@ -67,7 +69,7 @@ public class GlowPanel extends JPanel {
 	}
 
 	public void update(Mat webcam_image) {
-		Mat old = current;
+		old = current;
 		if (current == null)
 			old = webcam_image;
 		current = webcam_image;
@@ -118,13 +120,21 @@ public class GlowPanel extends JPanel {
 	}
 	
 	public void screenshot(){
+		int imageCount = 0;
+		File dir = new File("images");
+		dir.mkdirs();
+		Pattern pattern = Pattern.compile("^afterglow(\\d+)\\.jpg$");
+		for (String file : dir.list()) {
+			Matcher matcher = pattern.matcher(file);
+		    if (matcher.find())
+		    	imageCount = Math.max(imageCount, Integer.parseInt(matcher.group(1)));
+		}
+		
 		imageCount++;
-		BufferedImage bi = createBufferedImage(current);
-		File outputFile = new File("images");
-		outputFile.mkdirs();
-		outputFile = new File(outputFile, "afterglow" + imageCount + ".png");
+		BufferedImage bi = createBufferedImage(old);
+		File outputFile = new File(dir, "afterglow" + imageCount + ".jpg");
 	    try {
-			ImageIO.write(bi, "png", outputFile);
+			ImageIO.write(bi, "jpg", outputFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
