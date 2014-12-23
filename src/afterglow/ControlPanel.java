@@ -370,7 +370,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 				addToApplied(appliedFilters.size(), highlightedList.get(highlightedIndex));
 			}
 			else{
-				removeFromApplied(appliedFilters.size()-1);
+				removeFromApplied(highlightedIndex);
 				int size = highlightedList.size();
 				if(size == highlightedIndex){
 					if(size == 0){
