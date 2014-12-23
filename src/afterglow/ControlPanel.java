@@ -136,31 +136,38 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		
 		switch(speedDial){
 		case -1:
-			speedDial = 4;
+			speedDial = 5;
 			speedDial(0);
 			break;
 		case 0:
 			break;
-		case 1:
+		case 1: // rainbow sort
 			addToApplied(0, bulkSort);
 			addToApplied(1, halo);
 			break;
-		case 2:
+		case 2: // hollow
 			addToApplied(0, invert);
 			addToApplied(1, threshold);
 			break;
-		case 3:
+		case 3: // spectrum-frame
 			addToApplied(0, trace);
 			addToApplied(1, invert);
 			addToApplied(2, halo);
 			break;
-		case 4:
-			addToApplied(0, invert);
-			addToApplied(1, fade);
+		case 4: // journey
 			addToApplied(0, trace);
-			addToApplied(1, threshold);
+			addToApplied(1, invert);
+			addToApplied(2, halo);
+			addToApplied(3, trace);
+			addToApplied(4, fade);
+			break;
+		case 5: // prism break
 			addToApplied(0, invert);
 			addToApplied(1, fade);
+			addToApplied(2, trace);
+			addToApplied(3, threshold);
+			addToApplied(4, invert);
+			addToApplied(5, fade);
 			break;
 		default:
 			speedDial = 0;
