@@ -115,7 +115,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		buttonBox = new Rectangle2D.Double(0, 225, this.getWidth() - (buttonWidth + buffer*2), this.getHeight());
 		dropBox = new Rectangle2D.Double(this.getWidth() - (buttonWidth + buffer*2), 0, buttonWidth + buffer*2, this.getHeight());
 		
-		time = new Rectangle2D.Double(dashBox.getCenterX() - 50, dashBox.getY() + 10, 100,50);
+		time = new Rectangle2D.Double(0, dashBox.getY() + 10, dashBox.getWidth() + dashBox.getX(), 50);
 		download = new Rectangle2D.Double(dashBox.getCenterX() - 50, time.getY() + time.getHeight() + 10, 100, 50);
 		record = new Rectangle2D.Double(dashBox.getCenterX() - 50, download.getY() + download.getHeight() + 10, 100, 50);
 
