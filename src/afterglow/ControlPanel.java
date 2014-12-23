@@ -1,7 +1,9 @@
 package afterglow;
 
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.FontMetrics;
@@ -10,6 +12,7 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -37,12 +40,18 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	private Font roboto;
 	private BufferedImage logo;
 	private BufferedImage background;
+	private BufferedImage downloadIcon;
 	private GlowPanel canvas;
 	private Timer clock = new Timer(10000, this); // timer - every 10 seconds
+	private Timer render = new Timer(1000/60, this); // for rendering - 60 fp
+	private double recordButtonSize = .5;
 	private int speedDial = 0;
+	private boolean recording = false;
 
 	// boxes
 	Rectangle2D time;
+	Rectangle2D download;
+	Rectangle2D record;
 	RectangleButton bulkSort;
 	RectangleButton fade;
 	RectangleButton halo;
@@ -63,6 +72,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	int highlightedIndex;
 
 	// screen areas
+	Rectangle2D dashBox;
 	Rectangle2D dropBox;
 	Rectangle2D buttonBox;
 
@@ -90,17 +100,21 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		roboto = Font.createFont(Font.PLAIN, new File("assets/fonts/Roboto-Thin.ttf")).deriveFont(40f);
 		ge.registerFont(roboto);
 		logo = ImageIO.read(new File("logo.png"));
-		background = ImageIO.read(new File("assets/transparent.png"));
+		background = ImageIO.read(new File("assets/transparent2.png"));
+		downloadIcon = ImageIO.read(new File("assets/download.png"));
 		clock.start();
 		appliedFilters = new ArrayList<RectangleButton>();
 	}
 
 	// used to dynamically choose positions, sizes, etc...
 	private void initBoxes() {
-		time = new Rectangle2D.Double(50, 50, 100, 100);
-
-		dropBox = new Rectangle2D.Double(this.getWidth() * 3/4, 0, this.getWidth() * 1/4, this.getHeight());
-		buttonBox = new Rectangle2D.Double(0, 225, this.getWidth() * 3/4, this.getHeight());
+		dashBox = new Rectangle2D.Double(buffer, buffer, 100, 200);
+		buttonBox = new Rectangle2D.Double(0, 225, this.getWidth() - (buttonWidth + buffer*2), this.getHeight());
+		dropBox = new Rectangle2D.Double(this.getWidth() - (buttonWidth + buffer*2), 0, buttonWidth + buffer*2, this.getHeight());
+		
+		time = new Rectangle2D.Double(dashBox.getCenterX() - 50, dashBox.getY() + 10, 100,50);
+		download = new Rectangle2D.Double(dashBox.getCenterX() - 50, time.getY() + time.getHeight() + 10, 100, 50);
+		record = new Rectangle2D.Double(dashBox.getCenterX() - 50, download.getY() + download.getHeight() + 10, 100, 50);
 
 		buttons = new ArrayList<RectangleButton>(7);
 		
@@ -177,23 +191,41 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		super.paintComponent(g); // clears the board
 		g.setFont(roboto);
 		Graphics2D g2 = (Graphics2D) g;
+	    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+	             RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+	    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+	    		RenderingHints.VALUE_ANTIALIAS_ON);
 		FontMetrics fm = g2.getFontMetrics();
 		Rectangle2D rectText = null;
 
-		// logo
-		g.drawImage(logo, 150, 0, null);
+		// logo and background
+		g.drawImage(logo, (int)dashBox.getWidth() - 20, 0, null);
+        g2.drawImage(background, 0, getHeight()-350, null);
 
 		// screen areas
-		g2.setColor(Color.gray);
+		g2.setColor(Color.darkGray);
+		Composite c = g2.getComposite();
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.5f));
 		g2.fill(dropBox);
+		g2.fillRect(0, (int) download.getY(), (int) download.getWidth(), (int) download.getHeight());
+		g2.fillRect(0, (int) record.getY(), (int) record.getWidth(), (int) record.getHeight());
+		g2.setComposite(c);
 
 		// time
-		g2.setColor(Color.orange);
-		g2.fill(time);
 		String minute = "" + Calendar.getInstance().get(Calendar.MINUTE);
 		if (minute.length() == 1) minute = "0" + minute;
 		drawText(g, g2, fm, time, rectText, Calendar.getInstance().get(Calendar.HOUR) + ":" + minute);
+		
+		// download
+		g2.drawImage(downloadIcon, (int) (dashBox.getCenterX() - download.getHeight()/2), (int) download.getY(), (int) download.getHeight(), (int) download.getHeight(), null);
+		
+		// record
+		double circleSize = .75;
+		g2.drawOval((int) (dashBox.getCenterX() - record.getHeight()*circleSize/2), (int)(record.getCenterY() - record.getHeight()*circleSize/2), (int) (record.getHeight()*circleSize), (int) (record.getHeight()*circleSize));
+		g2.setColor(Color.red);
+		g2.fillOval((int) (dashBox.getCenterX() - record.getHeight()*recordButtonSize/2), (int)(record.getCenterY() - record.getHeight()*recordButtonSize/2), (int) (record.getHeight()*recordButtonSize), (int) (record.getHeight()*recordButtonSize));
 
+		
 		// draw each draggable rectangle button
 		for (RectangleButton button : buttons) {
 			g2.setColor(button.getColor());
@@ -206,9 +238,6 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			g2.fill(button);
 			drawText(g, g2, fm, button, rectText, button.getText());
 		}
-		
-		// "background"
-		g2.drawImage(background, 0, 400, null);
 
 		// draw the selected rectangle if you are dragging one
 		if (selected != null) {
@@ -278,7 +307,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	private Rectangle2D createAppliedRectangle(int index) {
 		double x = dropBox.getX();
 		double width = dropBox.getWidth();
-		return new Rectangle2D.Double(x + width * 1 / 5, 20 + (20 + 50) * (index), 200, 50);
+		return new Rectangle2D.Double(x + (width - buttonWidth)/2, 20 + (20 + 50) * (index), buttonWidth, buttonHeight);
 	}
 
 	private int getAppliedIndex(Point point) {
@@ -297,6 +326,23 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		if (e.getSource() == clock) {
 			repaint(new Rectangle((int) time.getX(), (int) time.getY(), (int) time.getWidth(), (int) time.getHeight()));
 		}
+		if (e.getSource() == render) {
+			if(recording){
+				if(recordButtonSize < .75 && recordButtonSize >= .5) recordButtonSize += .02;
+				else if(recordButtonSize >= .75){
+					recordButtonSize = .75;
+				}
+			}
+			else{
+				System.out.println(recordButtonSize);
+				if(recordButtonSize > .5) recordButtonSize -= .02;
+				else if(recordButtonSize <= .5){
+					recordButtonSize = .5;
+					render.stop();
+				}
+			}
+			repaint(new Rectangle((int) record.getX(), (int) record.getY(), (int) record.getWidth(), (int) record.getHeight()));
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -312,6 +358,20 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			if (button.contains(point)) {
 				removeFromApplied(getAppliedIndex(point));
 				break;
+			}
+		}
+		if(download.contains(point)){
+			canvas.screenshot();
+		}
+		else if(record.contains(point)){
+			recording = !recording;
+			if(recording){
+				recordButtonSize = .5;
+				canvas.startRecording();
+				render.start();
+			}
+			else{
+				canvas.stopRecording();
 			}
 		}
 		repaint();
