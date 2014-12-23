@@ -3,24 +3,26 @@ package afterglow;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
+
+import com.xuggle.mediatool.IMediaWriter;
+import com.xuggle.mediatool.ToolFactory;
+import com.xuggle.xuggler.ICodec;
 
 import afterglow.filters.Filter;
 import afterglow.filters.MirrorFilter;
@@ -31,6 +33,9 @@ public class GlowPanel extends JPanel {
 	private Mat current;
 	private Mat old;
 	private ArrayList<Filter> filters;
+	private IMediaWriter videoWriter;
+	private long startTime;
+	boolean recording = false;
 
 	public GlowPanel() throws IOException {
 		super();
@@ -81,6 +86,9 @@ public class GlowPanel extends JPanel {
 			current = filter.process(old, current);
 		this.matToBufferedImage(current);
 		this.repaint();
+
+		if (recording)
+			videoWriter.encodeVideo(0, image, System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
 	}
 
 	public void run() {
@@ -123,7 +131,7 @@ public class GlowPanel extends JPanel {
 	
 	public void screenshot() {
 		int imageCount = 0;
-		File dir = new File("images");
+		File dir = new File("../images");
 		dir.mkdirs();
 		Pattern pattern = Pattern.compile("^afterglow(\\d+)\\.jpg$");
 		for (String file : dir.list()) {
@@ -133,14 +141,36 @@ public class GlowPanel extends JPanel {
 		}
 		
 		imageCount++;
-		Highgui.imwrite("images/afterglow" + imageCount + ".jpg", old, new MatOfInt(Highgui.CV_IMWRITE_JPEG_QUALITY, 85));
+		Highgui.imwrite("../images/afterglow" + imageCount + ".jpg", old, new MatOfInt(Highgui.CV_IMWRITE_JPEG_QUALITY, 85));
 	}
 	
 	public void startRecording() {
+		int videoCount = 0;
+		File dir = new File("../videos");
+		dir.mkdirs();
+		Pattern pattern = Pattern.compile("^afterglow(\\d+)\\.mp4$");
+		for (String file : dir.list()) {
+			Matcher matcher = pattern.matcher(file);
+		    if (matcher.find())
+		    	videoCount = Math.max(videoCount, Integer.parseInt(matcher.group(1)));
+		}
 		
+		videoCount++;
+		videoWriter = ToolFactory.makeWriter("../videos/afterglow" + videoCount + ".mp4");
+		videoWriter.addVideoStream(0, 0, ICodec.ID.CODEC_ID_MPEG4, current.width()/2, current.height()/2);
+		startTime = System.nanoTime();
+		recording = true;
 	}
 	
 	public void stopRecording() {
-		
+		if (recording) {
+			recording = false;
+			try {
+				TimeUnit.MILLISECONDS.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			videoWriter.close();
+		}
 	}
 }
