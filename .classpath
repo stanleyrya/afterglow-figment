@@ -7,11 +7,11 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/local/Cellar/opencv/2.4.9/share/OpenCV/java"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/Users/vporras/Documents/afterglow/repo/lib/commons-lang3-3.3.2.jar"/>
-	<classpathentry kind="lib" path="/Users/vporras/Documents/afterglow/repo/lib/logback-core-1.1.2.jar"/>
-	<classpathentry kind="lib" path="/Users/vporras/Documents/afterglow/repo/lib/logback-classic-1.1.2.jar"/>
-	<classpathentry kind="lib" path="/Users/vporras/Documents/afterglow/repo/lib/xuggle-xuggler-5.4.jar"/>
-	<classpathentry kind="lib" path="/Users/vporras/Documents/afterglow/repo/lib/slf4j-api-1.7.9.jar"/>
-	<classpathentry kind="lib" path="/Users/vporras/Documents/afterglow/repo/lib/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.3.2.jar"/>
+	<classpathentry kind="lib" path="lib/logback-classic-1.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/logback-core-1.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.9.jar"/>
+	<classpathentry kind="lib" path="lib/xuggle-xuggler-5.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
