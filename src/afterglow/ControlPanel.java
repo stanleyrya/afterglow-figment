@@ -121,13 +121,13 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 
 		buttons = new ArrayList<RectangleButton>(7);
 		
-		buttons.add(bulkSort = createButtonRectangle(0, "Sort", Color.blue));
-		buttons.add(fade = createButtonRectangle(1, "Fade", Color.cyan));
-		buttons.add(halo = createButtonRectangle(2, "Halo", Color.green));
-		buttons.add(invert = createButtonRectangle(3, "Invert", Color.magenta));
-		buttons.add(mask = createButtonRectangle(4, "Mask", Color.red));
-		buttons.add(threshold = createButtonRectangle(5, "Threshold", Color.orange));
-		buttons.add(trace = createButtonRectangle(6, "Trace", Color.blue));
+		buttons.add(bulkSort = createButtonRectangle(0, "Sort", Color.blue.darker()));
+		buttons.add(fade = createButtonRectangle(1, "Fade", Color.cyan.darker()));
+		buttons.add(halo = createButtonRectangle(2, "Halo", Color.green.darker()));
+		buttons.add(invert = createButtonRectangle(3, "Invert", Color.magenta.darker()));
+		buttons.add(mask = createButtonRectangle(4, "Mask", Color.red.darker()));
+		buttons.add(threshold = createButtonRectangle(5, "Threshold", Color.orange.darker()));
+		buttons.add(trace = createButtonRectangle(6, "Trace", Color.blue.darker()));
 	}
 	
 	private void speedDial(int dial){
@@ -490,6 +490,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			if(highlightedList == null){
 				highlightedList = buttons;
 				highlightedIndex = 0;
+				break;
 			}
 			
 			highlightedIndex--;
@@ -509,6 +510,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			if(highlightedList == null){
 				highlightedList = buttons;
 				highlightedIndex = 0;
+				break;
 			}
 			
 //			if(getButtonRectangleYIndex(highlightedIndex + 1) != getButtonRectangleYIndex(highlightedIndex)){
@@ -531,7 +533,11 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		repaint();
 	}
 	
-	public void mouseMoved(MouseEvent e) {}
+	public void mouseMoved(MouseEvent e) {
+		highlightedList = null;
+		repaint();
+	}
+	
 	public void mousePressed(MouseEvent e) {}
 	public void mouseEntered(MouseEvent e) {}
 	public void mouseExited(MouseEvent e) {}
