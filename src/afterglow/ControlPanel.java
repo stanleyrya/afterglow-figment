@@ -300,9 +300,15 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	}
 
 	public void mouseClicked(MouseEvent e) {
+		Point point = e.getPoint();
 		for (RectangleButton button : buttons) {
-			if (button.contains(e.getPoint())) {
+			if (button.contains(point)) {
 				addToApplied(appliedFilters.size(), button);
+			}
+		}
+		for (RectangleButton button : appliedFilters) {
+			if (button.contains(point)) {
+				removeFromApplied(getAppliedIndex(point));
 			}
 		}
 	}
