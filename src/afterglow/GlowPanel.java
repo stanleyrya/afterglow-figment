@@ -15,8 +15,10 @@ import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
+import org.opencv.core.MatOfInt;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 
@@ -119,7 +121,7 @@ public class GlowPanel extends JPanel {
 		filters.remove(index + 1);
 	}
 	
-	public void screenshot(){
+	public void screenshot() {
 		int imageCount = 0;
 		File dir = new File("images");
 		dir.mkdirs();
@@ -131,21 +133,14 @@ public class GlowPanel extends JPanel {
 		}
 		
 		imageCount++;
-		BufferedImage bi = createBufferedImage(old);
-		File outputFile = new File(dir, "afterglow" + imageCount + ".jpg");
-	    try {
-			ImageIO.write(bi, "jpg", outputFile);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		Highgui.imwrite("images/afterglow" + imageCount + ".jpg", old, new MatOfInt(Highgui.CV_IMWRITE_JPEG_QUALITY, 85));
 	}
-
-	private static BufferedImage createBufferedImage(Mat mat) {
-	    BufferedImage image = new BufferedImage(mat.width(), mat.height(), BufferedImage.TYPE_3BYTE_BGR);
-	    WritableRaster raster = image.getRaster();
-	    DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
-	    byte[] data = dataBuffer.getData();
-	    mat.get(0, 0, data);
-	    return image;
+	
+	public void startRecording() {
+		
+	}
+	
+	public void stopRecording() {
+		
 	}
 }
