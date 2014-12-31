@@ -32,10 +32,11 @@ public class GlowPanel extends JPanel {
 	private BufferedImage image;
 	private Mat current;
 	private Mat old;
+	private boolean needToClear = false;
 	private ArrayList<Filter> filters;
 	private IMediaWriter videoWriter;
 	private long startTime;
-	boolean recording = false;
+	private boolean recording = false;
 
 	public GlowPanel() throws IOException {
 		super();
@@ -76,9 +77,11 @@ public class GlowPanel extends JPanel {
 	}
 
 	public void update(Mat webcam_image) {
-		old = current;
-		if (current == null)
+		if (current == null || needToClear) {
 			old = webcam_image;
+			needToClear = false;
+		} else 
+			old = current;
 		current = webcam_image;
 		
 		Filter[] a = new Filter[filters.size()];
@@ -127,6 +130,10 @@ public class GlowPanel extends JPanel {
 
 	public void removeFilter(int index) {
 		filters.remove(index + 1);
+	}
+	
+	public void clear() {
+		needToClear = true;
 	}
 	
 	public void screenshot() {

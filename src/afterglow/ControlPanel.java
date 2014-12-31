@@ -10,6 +10,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -44,10 +45,12 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	private GlowPanel canvas;
 	private Timer clock = new Timer(10000, this); // timer - every 10 seconds
 	private Timer render = new Timer(1000/60, this); // for rendering - 60 fps
+	private Timer downloader = new Timer(200, this); // for download action - .2 seconds
 	private Timer blinker = new Timer(500, this); // for blinking record button - every half second
 	double recordCircleSize = .75;
 	private double recordButtonSize = .5;
 	private int speedDial = 0;
+	private boolean downloaded = false;
 	private boolean recording = false;
 	private boolean blink = false;
 
@@ -179,18 +182,23 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		drawText(g2, roboto, Color.white, time, Calendar.getInstance().get(Calendar.HOUR) + ":" + minute);
 		
 		// download
-		g2.drawImage(downloadIcon, (int) (dashBox.getCenterX() - download.getHeight()/2), (int) download.getY(), (int) download.getHeight(), (int) download.getHeight(), null);
+		if (downloaded)
+			g2.drawImage(downloadIcon/*.getScaledInstance(downloadIcon., height, Image.SCALE_FAST)*/, (int) (dashBox.getCenterX() - download.getHeight()*.6), (int) (download.getCenterY() -  download.getHeight()*.6), (int) (download.getHeight() * 1.2), (int) (download.getHeight() * 1.2), null);
+		else
+			g2.drawImage(downloadIcon, (int) (dashBox.getCenterX() - download.getHeight()/2), (int) download.getY(), (int) download.getHeight(), (int) download.getHeight(), null);
+
 		
 		// record
 		g2.drawOval((int) (dashBox.getCenterX() - record.getHeight()*recordCircleSize/2), (int)(record.getCenterY() - record.getHeight()*recordCircleSize/2), (int) (record.getHeight()*recordCircleSize), (int) (record.getHeight()*recordCircleSize));
 		g2.setColor(Color.red);
 		g2.fillOval((int) (dashBox.getCenterX() - record.getHeight()*recordButtonSize/2), (int)(record.getCenterY() - record.getHeight()*recordButtonSize/2), (int) (record.getHeight()*recordButtonSize), (int) (record.getHeight()*recordButtonSize));
-		if(blink){
+		if (blink) {
 			drawText(g2, roboto.deriveFont(20f), Color.red, new Rectangle2D.Double(0,record.getY(),(int) (dashBox.getCenterX() - record.getHeight()*recordCircleSize/2), record.getHeight()), "REC");
 		}
 		
+		
 		// draw each draggable rectangle button
-		System.out.println(buttons.toString());
+		//System.out.println(buttons.toString());
 		for (RectangleButton button : buttons) {
 			g2.setColor(button.getColor());
 			g2.fill(button);
@@ -210,7 +218,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			drawText(g2, roboto, Color.white, selected, selected.getText());
 		}
 		
-		if(highlightedList != null){
+		if (highlightedList != null && highlightedList.size() > highlightedIndex) {
 			g2.setColor(Color.red);
 			g2.setStroke(new BasicStroke(5));
 			int buffer = 7;
@@ -329,9 +337,14 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			}
 			repaint(new Rectangle(0, (int) record.getY(), (int) record.getWidth(), (int) record.getHeight()));
 		}
-		if(e.getSource() == blinker) {
+		if (e.getSource() == blinker) {
 			blink = !blink;
 			repaint(new Rectangle(0, (int) record.getY(), (int) record.getWidth(), (int) record.getHeight()));
+		}
+		if (e.getSource() == downloader) {
+			downloader.stop();
+			downloaded = false;
+			repaint(new Rectangle(0, (int) download.getY(), (int) download.getWidth(), (int) download.getHeight()));
 		}
 	}
 
@@ -350,20 +363,20 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 				break;
 			}
 		}
-		if(download.contains(point)){
+		if (download.contains(point)) {
 			canvas.screenshot();
+			downloaded = true;
+			repaint(new Rectangle(0, (int) download.getY(), (int) download.getWidth(), (int) download.getHeight()));
+			downloader.start();
 		}
-		else if(record.contains(point)){
-			recording = !recording;
-			if(recording){
+		else if (record.contains(point)){
+			if (!recording) {
 				recordButtonSize = .5;
 				canvas.startRecording();
-				render.start();
-			}
-			else{
+			} else
 				canvas.stopRecording();
-				render.start();
-			}
+			recording = !recording;
+			render.start();
 		}
 		repaint();
 	}
@@ -425,13 +438,22 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			}
 			break;
 		case 'b':
-			canvas.screenshot();
+			canvas.clear();
 			break;
 		case '1':
-			speedDial(1);
+			canvas.screenshot();
+			downloaded = true;
+			repaint(new Rectangle(0, (int) download.getY(), (int) download.getWidth(), (int) download.getHeight()));
+			downloader.start();
 			break;
 		case '2':
-			speedDial(-1);
+			if (!recording) {
+				recordButtonSize = .5;
+				canvas.startRecording();
+			} else
+				canvas.stopRecording();
+			recording = !recording;
+			render.start();
 			break;
 		case '-':
 			removeFromApplied(appliedFilters.size()-1);
@@ -445,6 +467,62 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			addToApplied(1, fade);
 			break;
 		}
+		repaint();
+	}
+	
+	//traverse between the two lists using the arrow keys.
+	public void keyPressed(KeyEvent e) {
+		int keyCode = e.getKeyCode();
+		switch( keyCode ) {
+		case KeyEvent.VK_UP:
+			speedDial(1);
+			break;
+		case KeyEvent.VK_LEFT:
+			// activate highlight if it isn't already activated
+			if (highlightedList == null) {
+				highlightedList = buttons;
+				highlightedIndex = 0;
+				break;
+			}
+
+			// traverse list backwards
+			highlightedIndex--;
+			if (highlightedIndex == -1) {
+				if (highlightedList == buttons) {
+					if (appliedFilters.size() > 0)
+						highlightedList = appliedFilters;
+				} else {
+					highlightedList = buttons;
+				}
+				highlightedIndex = highlightedList.size() - 1;
+			}
+			break;
+		case KeyEvent.VK_DOWN:
+			speedDial(-1);
+			break;
+		case KeyEvent.VK_RIGHT :
+			if (highlightedList == null) {
+				highlightedList = buttons;
+				highlightedIndex = 0;
+				break;
+			}
+
+			// if(getButtonRectangleYIndex(highlightedIndex + 1) != getButtonRectangleYIndex(highlightedIndex)){
+			// //going out of buttons
+			// }
+			highlightedIndex++;
+			if (highlightedIndex == highlightedList.size()) {
+				if (highlightedList == buttons) {
+					if (appliedFilters.size() > 0)
+						highlightedList = appliedFilters;
+				} else {
+					highlightedList = buttons;
+				}
+				highlightedIndex = 0;
+			}
+			break;
+		}
+		
 		repaint();
 	}
 	
@@ -497,61 +575,6 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		}
 	}
 	
-	//traverse between the two lists using the arrow keys.
-	public void keyPressed(KeyEvent e) {
-		int keyCode = e.getKeyCode();
-		switch( keyCode ) { 
-		//left and up are the same
-		case KeyEvent.VK_UP:
-		case KeyEvent.VK_LEFT:
-			//activate highlight if it isnt already activated
-			if(highlightedList == null){
-				highlightedList = buttons;
-				highlightedIndex = 0;
-				break;
-			}
-			
-			//traverse list backwards
-			highlightedIndex--;
-			if(highlightedIndex == -1){
-				if(highlightedList == buttons){
-					if(appliedFilters.size() > 0)
-						highlightedList = appliedFilters;
-				}
-				else{
-					highlightedList = buttons;
-				}
-				highlightedIndex = highlightedList.size()-1;
-			}
-			break;
-		//right and down are the same
-		case KeyEvent.VK_DOWN:
-		case KeyEvent.VK_RIGHT :
-			if(highlightedList == null){
-				highlightedList = buttons;
-				highlightedIndex = 0;
-				break;
-			}
-			
-//			if(getButtonRectangleYIndex(highlightedIndex + 1) != getButtonRectangleYIndex(highlightedIndex)){
-//				//going out of buttons
-//			}
-			highlightedIndex++;
-			if(highlightedIndex == highlightedList.size()){
-				if(highlightedList == buttons){
-					if(appliedFilters.size() > 0)
-						highlightedList = appliedFilters;
-				}
-				else{
-					highlightedList = buttons;
-				}
-				highlightedIndex = 0;
-			}
-			break;
-		}
-		
-		repaint();
-	}
 	
 	public void mouseMoved(MouseEvent e) {
 		highlightedList = null;
