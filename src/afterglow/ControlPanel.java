@@ -65,6 +65,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 	RectangleButton mask;
 	RectangleButton threshold;
 	RectangleButton trace;
+	RectangleButton symbol;
 	ArrayList<RectangleButton> buttons;
 	
 	private int buffer = 20;
@@ -131,6 +132,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 		buttons.add(mask = createButtonRectangle(4, "Mask", Color.red.darker()));
 		buttons.add(threshold = createButtonRectangle(5, "Threshold", Color.orange.darker()));
 		buttons.add(trace = createButtonRectangle(6, "Trace", Color.blue.darker()));
+		buttons.add(symbol = createButtonRectangle(7, "Symbol", Color.cyan.darker()));
 	}
 
 	// first index is 0

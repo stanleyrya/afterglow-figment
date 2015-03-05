@@ -18,6 +18,7 @@ public abstract class Filter {
 			case "Mirror":		return new MirrorFilter();
 			case "Threshold":	return new ThresholdFilter();
 			case "Trace":		return new TraceFilter();
+			case "Symbol":		return new SymbolFilter();
 			default: 			return new MirrorFilter();
 		}
 	}
