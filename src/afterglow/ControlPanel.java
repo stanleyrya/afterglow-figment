@@ -433,7 +433,7 @@ public class ControlPanel extends JPanel implements ActionListener, MouseListene
 			if(highlightedList == buttons){
 				addToApplied(appliedFilters.size(), highlightedList.get(highlightedIndex));
 			}
-			else{
+			else if(highlightedList == appliedFilters){
 				removeFromApplied(highlightedIndex);
 			}
 			break;
